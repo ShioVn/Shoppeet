@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chi tiết đơn hàng</title>
+  <style>
+    body{
+        font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial; background:#f6f8fa;margin:0;padding:24px}
+    .container{
+        max-width:900px;margin:0 auto}
+    .card{
+        background:white;border-radius:12px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.06);}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    h1{font-size:20px;margin:0}
+    .muted{color:#6b7280}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:10px;border-bottom:1px solid #eef2f7;text-align:left}
+    .right{text-align:right}
+    .btn{padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
+    .btn-primary{background:#2563eb;color:#fff}
+    .btn-ghost{background:transparent;border:1px solid #e6edf3}
+    .status-pending{color:#b45309}
+    .status-paid{color:#065f46}
+    .status-cancel{color:#b91c1c}
+  </style>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    const SUPABASE_URL = 'https://cfzctoqsrkprcjstoqmp.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmemN0b3FzcmtwcmNqc3RvcW1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NDk5NjMsImV4cCI6MjA3ODMyNTk2M30.6p6c5JCwYimAp5kOQYvJ94jdciyhGNjB08c4uFI9eLc'
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    // Parse orderId from querystring
+    function getOrderId(){
+      const params = new URLSearchParams(window.location.search)
+      return params.get('orderId')
+    }
+
+    function formatVND(n){ return Number(n).toLocaleString('vi-VN', {style:'currency', currency:'VND'}) }
+
+    async function getSessionUserId(){
+      const r = await supabase.auth.getSession()
+      return r?.data?.session?.user?.id ?? null
+    }
+
+    async function loadOrder(){
+      const orderId = getOrderId()
+      if(!orderId){ document.getElementById('main').innerHTML = '<div class="card">Không có orderId trong URL.</div>'; return }
+
+      document.getElementById('loading').style.display = 'block'
+
+      // lấy order
+      const { data: order, error: errOrder } = await supabase.from('orders').select('id, user_id, total_amount, status, created_at').eq('id', orderId).single()
+      if(errOrder){ console.error(errOrder); document.getElementById('main').innerHTML = '<div class="card">Không tìm thấy đơn hàng.</div>'; return }
+
+      // kiểm tra user là chủ order (nếu đăng nhập)
+      const sessionUser = await getSessionUserId()
+      if(sessionUser && sessionUser !== order.user_id){ document.getElementById('note').textContent = 'Bạn không phải chủ đơn này.' }
+
+      // lấy order_items
+      const { data: items, error: errItems } = await supabase.from('order_items').select('id, product_id, quantity, price').eq('order_id', orderId)
+      if(errItems){ console.error(errItems) }
+
+      // lấy thông tin sản phẩm
+      const productIds = (items || []).map(i=>i.product_id)
+      let products = []
+      if(productIds.length){
+        const { data: prods, error: proErr } = await supabase.from('products').select('id, name, image_url').in('id', productIds)
+        if(proErr){ console.error(proErr) }
+        products = prods || []
+      }
+      const prodMap = {}
+      for(const p of products) prodMap[p.id] = p
+
+      // render
+      const container = document.getElementById('main')
+      container.innerHTML = `
+        <div class="card">
+          <header>
+            <div>
+              <h1>Chi tiết đơn hàng #${order.id}</h1>
+              <div class="muted">Ngày tạo: ${new Date(order.created_at).toLocaleString()}</div>
+              <div id="note" class="muted"></div>
+            </div>
+            <div class="right">
+              <div class="muted">Trạng thái</div>
+              <div id="status" class="muted">${order.status}</div>
+            </div>
+          </header>
+
+          <table>
+            <thead><tr><th>Sản phẩm</th><th>Số lượng</th><th>Giá</th><th class="right">Thành tiền</th></tr></thead>
+            <tbody>
+              ${ (items || []).map(it => `
+                <tr>
+                  <td>
+                    <div style="display:flex;gap:12px;align-items:center">
+                      <img src="${(prodMap[it.product_id]||{}).image_url || 'https://via.placeholder.com/64'}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:6px">
+                      <div>${(prodMap[it.product_id]||{}).name || 'Sản phẩm'}</div>
+                    </div>
+                  </td>
+                  <td>${it.quantity}</td>
+                  <td>${formatVND(it.price)}</td>
+                  <td class="right">${formatVND(it.price * it.quantity)}</td>
+                </tr>
+              `).join('') }
+            </tbody>
+            <tfoot>
+              <tr><td colspan="3" class="right"><strong>Tổng cộng:</strong></td><td class="right"><strong>${formatVND(order.total_amount)}</strong></td></tr>
+            </tfoot>
+          </table>
+
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+            <button class="btn btn-ghost" id="backBtn">Quay lại</button>
+          </div>
+        </div>
+      `
+
+      // status color
+      const statusEl = document.getElementById('status')
+      if(order.status === 'pending') statusEl.className = 'status-pending'
+      else if(order.status === 'paid') statusEl.className = 'status-paid'
+      else statusEl.className = 'status-cancel'
+
+      document.getElementById('backBtn').addEventListener('click', () => window.location.href = '../src/orderlist.html')
+
+      document.getElementById('loading').style.display = 'none'
+    }
+
+    document.addEventListener('DOMContentLoaded', loadOrder)
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div id="loading" style="display:none">Đang tải...</div>
+    <div id="main"></div>
+  </div>
+</body>
+</html>

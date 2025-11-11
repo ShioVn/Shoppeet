@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Danh sách đơn hàng</title>
+  <style>
+    body{font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial; background:#f6f8fa;margin:0;padding:24px}
+    .container{max-width:900px;margin:0 auto}
+    .card{background:white;border-radius:12px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.06);}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    h1{font-size:20px;margin:0}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:10px;border-bottom:1px solid #eef2f7;text-align:left}
+    .right{text-align:right}
+    .btn{padding:6px 10px;border-radius:8px;border:0;cursor:pointer}
+    .btn-link{background:transparent;color:#2563eb;border:0}
+    .muted{color:#6b7280}
+    .status-pending{color:#b45309}
+    .status-paid{color:#065f46}
+    .status-cancel{color:#b91c1c}
+    .empty{padding:40px;text-align:center;color:#6b7280}
+     .bubbles {
+  --c1: #212121; /* Recommendation: same background color */
+  --c2: #af8d11;
+  --size-letter: 32px;
+  padding: 0.5em 1em;
+  font-size: var(--size-letter);
+
+  background-color: transparent;
+  border: calc(var(--size-letter) / 6) solid var(--c2);
+  border-radius: 0.2em;
+  cursor: pointer;
+
+  overflow: hidden;
+  position: relative;
+  transition: 300ms cubic-bezier(0.83, 0, 0.17, 1);
+}
+
+.bubbles > .text {
+  font-weight: 700;
+  color: var(--c2);
+  position: relative;
+  z-index: 1;
+  transition: color 700ms cubic-bezier(0.83, 0, 0.17, 1);
+}
+
+.bubbles::before {
+  top: 0;
+  left: 0;
+}
+
+.bubbles::after {
+  top: 100%;
+  left: 100%;
+}
+
+.bubbles::before,
+.bubbles::after {
+  content: "";
+  width: 150%;
+  aspect-ratio: 1/1;
+  scale: 0;
+  transition: 1000ms cubic-bezier(0.76, 0, 0.24, 1);
+
+  background-color: var(--c2);
+  border-radius: 50%;
+
+  position: absolute;
+  translate: -50% -50%;
+}
+
+.bubbles:hover {
+  & > span {
+    color: var(--c1);
+  }
+  &::before,
+  &::after {
+    scale: 1;
+  }
+}
+
+.bubbles:active {
+  scale: 0.98;
+  filter: brightness(0.9);
+}
+  </style>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    const SUPABASE_URL = 'https://cfzctoqsrkprcjstoqmp.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmemN0b3FzcmtwcmNqc3RvcW1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NDk5NjMsImV4cCI6MjA3ODMyNTk2M30.6p6c5JCwYimAp5kOQYvJ94jdciyhGNjB08c4uFI9eLc'
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    async function getSessionUserId(){
+      const r = await supabase.auth.getSession()
+      return r?.data?.session?.user?.id ?? null
+    }
+
+    function formatVND(n){ return Number(n).toLocaleString('vi-VN', {style:'currency', currency:'VND'}) }
+
+    async function loadOrders(){
+      const userId = await getSessionUserId()
+      const container = document.getElementById('main')
+      if(!userId){ container.innerHTML = '<div class="card"><div class="empty">Bạn chưa đăng nhập.</div></div>'; return }
+
+      container.innerHTML = '<div class="card">Đang tải...</div>'
+
+      // lấy orders của user (sắp xếp mới nhất trước)
+      const { data, error } = await supabase.from('orders').select('id, total_amount, status, created_at').eq('user_id', userId).order('created_at', {ascending: false})
+      if(error){ console.error(error); container.innerHTML = '<div class="card"><div class="empty">Lỗi khi tải đơn hàng.</div></div>'; return }
+
+      if(!data || data.length === 0){ container.innerHTML = '<div class="card"><div class="empty">Bạn chưa có đơn hàng nào.</div></div>'; return }
+
+      const rows = data.map(o => `
+        <tr>
+          <td>#${o.id}</td>
+          <td>${new Date(o.created_at).toLocaleString()}</td>
+          <td>${formatVND(o.total_amount)}</td>
+          <td><span class="status-${o.status}">${o.status}</span></td>
+          <td class="right"><button class="btn btn-link" data-id="${o.id}">Xem chi tiết</button></td>
+        </tr>
+      `).join('')
+
+      container.innerHTML = `
+        <div class="card">
+          <header>
+            <h1>Đơn hàng của bạn</h1>
+            <div class="muted">Tổng: ${data.length} đơn</div>
+          </header>
+          <table>
+            <thead><tr><th>Mã đơn</th><th>Ngày</th><th>Tổng</th><th>Trạng thái</th><th class="right">Hành động</th></tr></thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+        </div>
+      `
+
+      // gắn sự kiện xem chi tiết
+      document.querySelectorAll('button[data-id]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = btn.dataset.id
+          window.location.href = '../src/order.html?orderId=' + id
+        })
+      })
+    }
+
+    document.addEventListener('DOMContentLoaded', loadOrders)
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div id="main"></div>
+  </div>
+  <button class="bubbles" style="display: flex; align-items: center;justify-content: center; margin-left: 570px;margin-top:100px" onclick="location.href='../src/main.html'">
+    <span class="text">Quay lại trang mua</span>
+</button>
+</body>
+
+</html>

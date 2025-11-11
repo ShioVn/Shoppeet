@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shop test - Login</title>
+    <title>Shoppeet - Đăng nhập</title>
     <script src="../js/tailwind.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tsparticles"></script>
     <link rel="stylesheet" type="text/css" href="../css/register.css">
@@ -55,7 +55,7 @@
             }
 
             console.log('Đăng nhập thành công', data)
-            window.location.href = '../src/profile.html'
+            window.location.href = '../src/main.html'
           } catch (err) {
             console.error('Lỗi đăng nhập', err)
             showError('Có lỗi xảy ra. Kiểm tra console.')
@@ -117,6 +117,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 <body style="display: flex;justify-content: center;align-items: center;">
+
+  <button id="backBtn" class="fancy absolute top-2 left-2 text-white px-4 py-2 rounded" onclick="location.href='../index.html'">
+                <span class="top-key"></span>
+                <span class="text">Quay về trang chủ</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+  </button>
 
 <form class="form" data-sal="slide-up" style="--sal-duration: 0.8s; --sal-delay: 0s;">
     <h1 style="font-weight: bold;margin: auto;">
