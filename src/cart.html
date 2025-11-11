@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Giỏ Hàng</title>
+<style>
+  body {
+    font-family: sans-serif;
+    margin: 0;
+    background: #f6f6f6;
+  }
+  header {
+    background: #fff;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #ddd;
+  }
+  h1 {
+    font-size: 24px;
+    margin: 20px;
+  }
+  .cart-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+  }
+  .cart-item {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    gap: 15px;
+    box-shadow: 0px 3px 8px rgba(0,0,0,0.05);
+  }
+  .cart-item img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+  }
+  .cart-item h2 {
+    font-size: 16px;
+    margin: 0 0 5px 0;
+  }
+  .cart-item p {
+    margin: 0;
+    font-size: 14px;
+  }
+  .cart-item .price {
+    font-weight: bold;
+    color: #ff5a1f;
+  }
+  .cart-item button {
+    margin-left: auto;
+    padding: 6px 12px;
+    border: none;
+    background: #e81cff;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .total {
+    text-align: right;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 20px;
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const SUPABASE_URL = 'https://cfzctoqsrkprcjstoqmp.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmemN0b3FzcmtwcmNqc3RvcW1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NDk5NjMsImV4cCI6MjA3ODMyNTk2M30.6p6c5JCwYimAp5kOQYvJ94jdciyhGNjB08c4uFI9eLc';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function getUserId(){
+    const r = await supabase.auth.getSession();
+    return r?.data?.session?.user?.id ?? null;
+}
+
+// Lấy giỏ hàng của user
+async function loadCart() {
+    const userId = await getUserId();
+    if(!userId){
+        document.querySelector('.cart-container').innerHTML = '<p>Bạn chưa đăng nhập.</p>';
+        return;
+    }
+
+    const { data, error } = await supabase
+        .from('cart_items')
+        .select(`id, quantity, product:product_id(name, price, image_url)`)
+        .eq('user_id', userId);
+
+    if(error){
+        console.error(error);
+        return;
+    }
+
+    const container = document.querySelector('.cart-container');
+    container.innerHTML = '';
+
+    let total = 0;
+    data.forEach(item => {
+        const price = parseFloat(item.product.price);
+        const quantity = item.quantity;
+        total += price * quantity;
+
+        const div = document.createElement('div');
+        div.className = 'cart-item';
+        div.innerHTML = `
+            <img src="${item.product.image_url}" alt="${item.product.name}" />
+            <div>
+                <h2>${item.product.name}</h2>
+                <p class="price">${price.toLocaleString('vi-VN', {style:'currency', currency:'VND'})} x ${quantity}</p>
+            </div>
+            <button data-id="${item.id}">Xóa</button>
+        `;
+        container.appendChild(div);
+    });
+
+    const totalDiv = document.createElement('div');
+    totalDiv.className = 'total';
+    totalDiv.textContent = 'Tổng: ' + total.toLocaleString('vi-VN', {style:'currency', currency:'VND'});
+    container.appendChild(totalDiv);
+
+    // Gắn sự kiện xóa
+    container.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            const { error } = await supabase.from('cart_items').delete().eq('id', id);
+            if(error){
+                console.error(error);
+                alert('Xóa thất bại!');
+            } else {
+                loadCart();
+            }
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', loadCart);
+</script>
+</head>
+<body>
+<header>
+    <a class="logo" href="../src/main.html">
+      <img src="../data/img/logo.png" alt="Logo" height="40" />
+    </a>
+</header>
+<h1>Giỏ Hàng Của Bạn</h1>
+<div class="cart-container">
+  <!-- Giỏ hàng sẽ load ở đây -->
+</div>
+</body>
+</html>

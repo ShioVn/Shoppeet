@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop test - Đăng Ký</title>
+    <script src="../js/tailwind.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles"></script>
+    <link rel="stylesheet" type="text/css" href="../css/register.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sal.js@0.8.5/dist/sal.css">
+    <style>
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+            text-align: center;
+            font-size: 14px;
+        }
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+
+<script src="https://cdn.jsdelivr.net/npm/sal.js@0.8.5/dist/sal.min.js"></script>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+// Supabase config
+const SUPABASE_URL = 'https://cfzctoqsrkprcjstoqmp.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmemN0b3FzcmtwcmNqc3RvcW1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NDk5NjMsImV4cCI6MjA3ODMyNTk2M30.6p6c5JCwYimAp5kOQYvJ94jdciyhGNjB08c4uFI9eLc'
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+// DOM
+const form = document.querySelector('.form')
+const emailInput = document.getElementById('email')
+const passwordInput = document.getElementById('password')
+const confirmPasswordInput = document.getElementById('confirmPassword')
+const messageDiv = document.getElementById('message')
+const submitBtn = document.querySelector('.button-submit')
+
+function showMessage(msg, type = 'error') {
+  messageDiv.textContent = msg
+  messageDiv.className = `message ${type}`
+  messageDiv.style.display = 'block'
+  
+  setTimeout(() => {
+    messageDiv.style.display = 'none'
+  }, 5000)
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault()
+  
+  const email = emailInput.value.trim()
+  const password = passwordInput.value
+  const confirmPassword = confirmPasswordInput.value
+
+  // Validation
+  if (!email || !password || !confirmPassword) {
+    showMessage('Vui lòng điền đầy đủ thông tin', 'error')
+    return
+  }
+
+  if (password.length < 6) {
+    showMessage('Mật khẩu phải có ít nhất 6 ký tự', 'error')
+    return
+  }
+
+  if (password !== confirmPassword) {
+    showMessage('Mật khẩu xác nhận không khớp', 'error')
+    return
+  }
+
+  // Disable button khi đang xử lý
+  submitBtn.disabled = true
+  submitBtn.textContent = 'Đang xử lý...'
+
+  try {
+    // Đăng ký với Supabase
+    const { data, error } = await supabase.auth.signUp({
+      email: email,
+      password: password,
+      options: {
+        emailRedirectTo: `${window.location.origin}../index.html`,
+        data: {
+          email: email
+        }
+      }
+    })
+
+    if (error) {
+      throw error
+    }
+
+    console.log('Sign up response:', data)
+
+    // Kiểm tra xem có cần confirm email không
+    if (data?.user && data?.user?.identities?.length === 0) {
+      // Email đã tồn tại
+      showMessage('Email này đã được đăng ký. Vui lòng đăng nhập.', 'error')
+      setTimeout(() => {
+        window.location.href = '../src/sign-in.html'
+      }, 2000)
+      return
+    }
+
+    if (data?.user && !data?.session) {
+      // Cần xác nhận email
+      showMessage('Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản.', 'success')
+      
+      // Tạo profile ngay cả khi chưa confirm email
+      try {
+        await supabase.from('profiles').insert({
+          id: data.user.id,
+          full_name: '',
+          phone: '',
+          address: '',
+          email: email
+        })
+      } catch (profileError) {
+        console.log('Profile sẽ được tạo sau khi confirm email')
+      }
+
+      setTimeout(() => {
+        window.location.href = '../src/sign-in.html'
+      }, 3000)
+    } else if (data?.session) {
+      // Không cần confirm email (auto-confirm enabled)
+      showMessage('Đăng ký thành công!', 'success')
+      
+      // Tạo profile
+      const { error: profileError } = await supabase.from('profiles').upsert({
+        id: data.user.id,
+        full_name: '',
+        phone: '',
+        address: '',
+        email: email
+      })
+
+      if (profileError) {
+        console.error('Profile error:', profileError)
+      }
+
+      setTimeout(() => {
+        window.location.href = '../index.html'
+      }, 1500)
+    }
+
+  } catch (err) {
+    console.error('Sign up error:', err)
+    showMessage(err.message || 'Có lỗi xảy ra. Vui lòng thử lại.', 'error')
+  } finally {
+    submitBtn.disabled = false
+    submitBtn.textContent = 'Đăng Ký'
+  }
+})
+
+// Google OAuth
+const googleBtn = document.querySelector('.btn.google')
+if (googleBtn) {
+  googleBtn.addEventListener('click', async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}../index.html`
+        }
+      })
+      if (error) {
+        showMessage('Lỗi đăng nhập Google: ' + error.message, 'error')
+      }
+    } catch (err) {
+      console.error('Google OAuth error:', err)
+      showMessage('Có lỗi xảy ra khi đăng nhập Google', 'error')
+    }
+  })
+}
+
+</script>
+
+<body style="display: flex;justify-content: center;align-items: center;">
+
+<form class="form" data-sal="slide-up" style="--sal-duration: 0.8s; --sal-delay: 0s;">
+    <h1 style="font-weight: bold;margin: auto;">Đăng Ký</h1>
+    
+    <!-- Message box -->
+    <div id="message" class="message"></div>
+
+    <div class="flex-column">
+      <label>Email</label>
+    </div>
+    <div class="inputForm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 32 32" height="20">
+          <g data-name="Layer 3" id="Layer_3">
+            <path d="m30.853 13.87a15 15 0 0 0 -29.729 4.082 15.1 15.1 0 0 0 12.876 12.918 15.6 15.6 0 0 0 2.016.13 14.85 14.85 0 0 0 7.715-2.145 1 1 0 1 0 -1.031-1.711 13.007 13.007 0 1 1 5.458-6.529 2.149 2.149 0 0 1 -4.158-.759v-10.856a1 1 0 0 0 -2 0v1.726a8 8 0 1 0 .2 10.325 4.135 4.135 0 0 0 7.83.274 15.2 15.2 0 0 0 .823-7.455zm-14.853 8.13a6 6 0 1 1 6-6 6.006 6.006 0 0 1 -6 6z"></path>
+          </g>
+        </svg>
+        <input placeholder="Enter your Email" class="input" type="email" id="email" required>
+    </div>
+    
+    <div class="flex-column">
+      <label>Password</label>
+    </div>
+    <div class="inputForm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="-64 0 512 512" height="20">
+          <path d="m336 512h-288c-26.453125 0-48-21.523438-48-48v-224c0-26.476562 21.546875-48 48-48h288c26.453125 0 48 21.523438 48 48v224c0 26.476562-21.546875 48-48 48zm-288-288c-8.8125 0-16 7.167969-16 16v224c0 8.832031 7.1875 16 16 16h288c8.8125 0 16-7.167969 16-16v-224c0-8.832031-7.1875-16-16-16zm0 0"></path>
+          <path d="m304 224c-8.832031 0-16-7.167969-16-16v-80c0-52.929688-43.070312-96-96-96s-96 43.070312-96 96v80c0 8.832031-7.167969 16-16 16s-16-7.167969-16-16v-80c0-70.59375 57.40625-128 128-128s128 57.40625 128 128v80c0 8.832031-7.167969 16-16 16zm0 0"></path>
+        </svg>        
+        <input placeholder="Enter your Password" class="input" type="password" id="password" required>
+    </div>
+
+    <div class="flex-column">
+      <label>Confirm Password</label>
+    </div>
+    <div class="inputForm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="-64 0 512 512" height="20">
+          <path d="m336 512h-288c-26.453125 0-48-21.523438-48-48v-224c0-26.476562 21.546875-48 48-48h288c26.453125 0 48 21.523438 48 48v224c0 26.476562-21.546875 48-48 48zm-288-288c-8.8125 0-16 7.167969-16 16v224c0 8.832031 7.1875 16 16 16h288c8.8125 0 16-7.167969 16-16v-224c0-8.832031-7.1875-16-16-16zm0 0"></path>
+          <path d="m304 224c-8.832031 0-16-7.167969-16-16v-80c0-52.929688-43.070312-96-96-96s-96 43.070312-96 96v80c0 8.832031-7.167969 16-16 16s-16-7.167969-16-16v-80c0-70.59375 57.40625-128 128-128s128 57.40625 128 128v80c0 8.832031-7.167969 16-16 16zm0 0"></path>
+        </svg>        
+        <input placeholder="Confirm your Password" class="input" type="password" id="confirmPassword" required>
+    </div>
+    
+    <button class="button-submit" type="submit">Đăng Ký</button>
+    
+    <p class="p">Đã Có Tài Khoản? <a class="span" href="../src/sign-in.html">Đăng nhập</a></p>
+    <p class="p line">Hoặc Đăng Ký Với</p>
+
+    <div class="flex-row">
+      <button class="btn google" type="button">
+        <svg xml:space="preserve" style="enable-background:new 0 0 512 512;" viewBox="0 0 512 512" y="0px" x="0px" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" id="Layer_1" width="20" version="1.1">
+          <path d="M113.47,309.408L95.648,375.94l-65.139,1.378C11.042,341.211,0,299.9,0,256c0-42.451,10.324-82.483,28.624-117.732h0.014l57.992,10.632l25.404,57.644c-5.317,15.501-8.215,32.141-8.215,49.456C103.821,274.792,107.225,292.797,113.47,309.408z" style="fill:#FBBB00;"></path>
+          <path d="M507.527,208.176C510.467,223.662,512,239.655,512,256c0,18.328-1.927,36.206-5.598,53.451c-12.462,58.683-45.025,109.925-90.134,146.187l-0.014-0.014l-73.044-3.727l-10.338-64.535c29.932-17.554,53.324-45.025,65.646-77.911h-136.89V208.176h138.887L507.527,208.176L507.527,208.176z" style="fill:#518EF8;"></path>
+          <path d="M416.253,455.624l0.014,0.014C372.396,490.901,316.666,512,256,512c-97.491,0-182.252-54.491-225.491-134.681l82.961-67.91c21.619,57.698,77.278,98.771,142.53,98.771c28.047,0,54.323-7.582,76.87-20.818L416.253,455.624z" style="fill:#28B446;"></path>
+          <path d="M419.404,58.936l-82.933,67.896c-23.335-14.586-50.919-23.012-80.471-23.012c-66.729,0-123.429,42.957-143.965,102.724l-83.397-68.276h-0.014C71.23,56.123,157.06,0,256,0C318.115,0,375.068,22.126,419.404,58.936z" style="fill:#F14336;"></path>
+        </svg>
+        Google 
+      </button>
+    </div>
+</form>
+
+<script>
+  sal();
+</script>
+</body>
+</html>

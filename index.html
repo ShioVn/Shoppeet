@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop test</title>
+    <script src="js/tailwind.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles"></script>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sal.js@0.8.5/dist/sal.css">
+    
+</head>
+
+  <script src="https://cdn.jsdelivr.net/npm/sal.js@0.8.5/dist/sal.min.js" ></script>
+
+<body class="container" id="bd">
+
+        <div class="scroll-indicator" style="margin-left: 700px;">
+        <span class="scroll-text">Scroll</span>
+        <div class="mouse"></div>
+        <div class="arrow"></div>
+    </div>
+
+    <div id="topBar" class="top-bar" 
+        style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
+    <button id="logoBtn" style="
+        border: none;
+        background: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;">
+        <img src="data/img/logo.png" alt="Logo" style="height:40px; width:auto;">
+    </button>
+
+    <label class="switch">
+        <input type="checkbox" class="input__check" id="Nightmode">
+        <span class="slider"></span>
+    </label>
+    </div>
+
+    <div id="fixedText" style="pointer-events: auto;
+color: #f200ff ;">
+        Developed by 
+        <a href="https://github.com/ShioVn" target="_blank" id="Shio">Shio</a>
+     </div>
+
+
+
+   <div data-sal="slide-up" style="
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    --sal-duration: 0.8s;
+    --sal-delay: 0s;
+    position: relative;
+    gap: 20px;
+">
+
+    <!-- Logo ở giữa -->
+    <img src="data/img/logo.png" alt="Logo" style="
+        width: 200px;
+        height: auto;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    ">
+
+    <!-- Input + Subscribe button ở ngoài cùng bên phải -->
+    <div class="input-wrapper" style="
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-left: auto;
+    ">
+       
+  <button class="Subscribe-btn" onclick="location.href='src/sign-up.html'">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="30"
+      height="10"
+      viewBox="0 0 38 15"
+      class="arrow"
+    >
+      <path
+        d="M10 7.519l-.939-.344h0l.939.344zm14.386-1.205l-.981-.192.981.192zm1.276 5.509l.537.843.148-.094.107-.139-.792-.611zm4.819-4.304l-.385-.923h0l.385.923zm7.227.707a1 1 0 0 0 0-1.414L31.343.448a1 1 0 0 0-1.414 0 1 1 0 0 0 0 1.414l5.657 5.657-5.657 5.657a1 1 0 0 0 1.414 1.414l6.364-6.364zM1 7.519l.554.833.029-.019.094-.061.361-.23 1.277-.77c1.054-.609 2.397-1.32 3.629-1.787.617-.234 1.17-.392 1.623-.455.477-.066.707-.008.788.034.025.013.031.021.039.034a.56.56 0 0 1 .058.235c.029.327-.047.906-.39 1.842l1.878.689c.383-1.044.571-1.949.505-2.705-.072-.815-.45-1.493-1.16-1.865-.627-.329-1.358-.332-1.993-.244-.659.092-1.367.305-2.056.566-1.381.523-2.833 1.297-3.921 1.925l-1.341.808-.385.245-.104.068-.028.018c-.011.007-.011.007.543.84zm8.061-.344c-.198.54-.328 1.038-.36 1.484-.032.441.024.94.325 1.364.319.45.786.64 1.21.697.403.054.824-.001 1.21-.09.775-.179 1.694-.566 2.633-1.014l3.023-1.554c2.115-1.122 4.107-2.168 5.476-2.524.329-.086.573-.117.742-.115s.195.038.161.014c-.15-.105.085-.139-.076.685l1.963.384c.192-.98.152-2.083-.74-2.707-.405-.283-.868-.37-1.28-.376s-.849.069-1.274.179c-1.65.43-3.888 1.621-5.909 2.693l-2.948 1.517c-.92.439-1.673.743-2.221.87-.276.064-.429.065-.492.057-.043-.006.066.003.155.127.07.099.024.131.038-.063.014-.187.078-.49.243-.94l-1.878-.689zm14.343-1.053c-.361 1.844-.474 3.185-.413 4.161.059.95.294 1.72.811 2.215.567.544 1.242.546 1.664.459a2.34 2.34 0 0 0 .502-.167l.15-.076.049-.028.018-.011c.013-.008.013-.008-.524-.852l-.536-.844.019-.012c-.038.018-.064.027-.084.032-.037.008.053-.013.125.056.021.02-.151-.135-.198-.895-.046-.734.034-1.887.38-3.652l-1.963-.384zm2.257 5.701l.791.611.024-.031.08-.101.311-.377 1.093-1.213c.922-.954 2.005-1.894 2.904-2.27l-.771-1.846c-1.31.547-2.637 1.758-3.572 2.725l-1.184 1.314-.341.414-.093.117-.025.032c-.01.013-.01.013.781.624zm5.204-3.381c.989-.413 1.791-.42 2.697-.307.871.108 2.083.385 3.437.385v-2c-1.197 0-2.041-.226-3.19-.369-1.114-.139-2.297-.146-3.715.447l.771 1.846z"
+      ></path></svg>Đăng Kí
+  </button>
+    </div>
+</div>
+
+
+    </div>
+
+    <div class="hover-underline" data-sal="slide-up" style="display: flex;align-items: center;justify-content: center;--sal-duration: 0.8s; --sal-delay: 0s;">Shoppet! At Your Service</div>
+
+    <div class="wrapper" style="margin-left: 10px;margin-top: 1oolx;">
+    <div class="inner" style="--quantity: 10;">
+        <div class="card2" style="--index: 0;--color-card: 142, 249, 252;">
+        <div class="img"> 
+            <img src="data/img/sp1.jpg">
+            <span class="text">59.000₫</span>
+         </div>
+        </div>
+        <div class="card2" style="--index: 1;--color-card: 142, 252, 204;">
+        <div class="img">
+            <img src="data/img/sp2.jpg">
+            <span class="text">59.000₫</span>
+
+        </div>
+        </div>
+        <div class="card2" style="--index: 2;--color-card: 142, 252, 157;">
+        <div class="img">
+            <img src="data/img/sp3.jpg">
+            <span class="text">20.000₫ - 30.800₫</span>
+        </div>
+        </div>
+        <div class="card2" style="--index: 3;--color-card: 215, 252, 142;">
+        <div class="img">
+            <img src="data/img/sp4.jpg">
+            <span class="text">89.999₫</span>
+        </div>
+        </div>
+        <div class="card2" style="--index: 4;--color-card: 252, 252, 142;">
+        <div class="img">
+            <img src="data/img/sp5.jpg">
+            <span class="text">14.997₫</span>
+        </div>
+        </div>
+        <div class="card2" style="--index: 5;--color-card: 252, 208, 142;">
+        <div class="img">
+            <img src="data/img/sp6.jpg">
+            <span class="text">115.000₫</span>
+        </div>
+        </div>
+        <div class="card2" style="--index: 6;--color-card: 252, 142, 142;">
+        <div class="img">
+            <img src="data/img/sp7.jpg">
+            <span class="text">115.000₫</span>
+        </div>
+        </div>
+        <div class="card2" style="--index: 7;--color-card: 252, 142, 239;">
+        <div class="img">
+            <img src="data/img/sp8.jpg">
+            <span class="text">44.000₫</span>
+        </div>
+        </div>
+        <div class="card2" style="--index: 8;--color-card: 204, 142, 252;">
+        <div class="img">
+            <img src="data/img/sp9.jpg">
+            <span class="text">44.000₫</span>
+        </div>
+        </div>
+        <div class="card2" style="--index: 9;--color-card: 142, 202, 252;">
+        <div class="img">
+            <img src="data/img/sp10.jpg">
+            <span class="text">157.000₫</span>
+        </div>
+        </div>
+    </div>
+    </div>
+
+    
+    
+
+    <div class="container2" style="margin-top: 1000px;margin-left: 60px;display: flex; align-items: center;justify-content: center;margin-bottom: 50px;">
+
+        <div id="sgb" class="suggestion-bar" data-sal="slide-up" style="margin-top:100px;--sal-duration: 0.8s; --sal-delay: 0s;" >
+            <h2>Sản phẩm nổi bật</h2>
+        </div>
+
+        <div class="item card"  data-sal="slide-up" style=" flex-direction: column;margin-bottom: 50px;margin-right:20px;--sal-duration: 0.8s; --sal-delay: 0s;">
+            <img src="data/img/sp1.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Loa Máy Tính Để Bàn MC D221</h1>
+            <button id="buyBtn1" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">59.000₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+
+        <div class="item card"  data-sal="slide-up" style=" flex-direction: column;margin-bottom: 50px;margin-right:20px;--sal-duration: 0.8s; --sal-delay: 0s;">
+            <img src="data/img/sp2.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Máy Sấy tóc gấp gọn tạo kiểu tóc</h1>
+            <button id="buyBtn2" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">59.000₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+
+        <div class="item card"  data-sal="slide-up" style=" flex-direction: column;margin-bottom: 50px;margin-right:20px;--sal-duration: 0.8s; --sal-delay: 0s;">
+            <img src="data/img/sp3.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Ốp lưng iphone 15/14/13/12/11/Pro</h1>
+            <button id="buyBtn3" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">20.000₫ - 30.800₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+        
+        <div class="item card"  data-sal="slide-up" style=" flex-direction: column;margin-bottom: 50px;margin-right:20px;--sal-duration: 0.8s; --sal-delay: 0s;">
+            <img src="data/img/sp4.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Ô Dù PTLUXURY 8 Nan Và 10 Nan</h1>
+            <button id="buyBtn4" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">89.999₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+
+        <div class="item card"  data-sal="slide-up" style=" flex-direction: column;margin-bottom: 50px;margin-right:20px;--sal-duration: 0.8s; --sal-delay: 0s;">
+            <img src="data/img/sp5.jpg" style="width: 126px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Áo khoác bomber dù 2 lớp trượt nước cản gió</h1>
+            <button id="buyBtn5" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">14.997₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+
+        <div class="item card"  data-sal="slide-up" style=" flex-direction: column;margin-bottom: 50px;margin-right:20px;--sal-duration: 0.8s; --sal-delay: 0s;">
+            <img src="data/img/sp6.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Combo Bánh Tráng Phơi Sương Dẻo</h1>
+            <button id="buyBtn6" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">115.000₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+        <div class="item card"  data-sal="slide-up" style=" flex-direction: column;margin-bottom: 50px;margin-right:20px;--sal-duration: 0.8s; --sal-delay: 0s;">
+            <img src="data/img/sp7.jpg" style="width: 170px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Nước Hoa Nữ Thơm Lâu Venus Hương Thơm Sang Trọng</h1>
+            <button id="buyBtn7" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">115.000₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+        <div class="item card"  data-sal="slide-up" style=" flex-direction: column;margin-bottom: 50px;margin-right:20px;--sal-duration: 0.8s; --sal-delay: 0s;">
+            <img src="data/img/sp8.jpg" style="width: 170px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Chuột không dây , Bluetooth, sạc pin bằng USB</h1>
+            <button id="buyBtn8" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">44.000₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+        <div class="item card"  data-sal="slide-up" style=" flex-direction: column;margin-bottom: 50px;margin-right:20px;--sal-duration: 0.8s; --sal-delay: 0s;">
+            <img src="data/img/sp9.jpg" style="width: 170px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Thắt lưng mặt xoay nam cao cấp thời trang</h1>
+            <button id="buyBtn9" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">44.000₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+        <div class="item card"  data-sal="slide-up" style=" flex-direction: column;margin-bottom: 50px;margin-right:20px;--sal-duration: 0.8s; --sal-delay: 0s;">
+            <img src="data/img/sp10.jpg" style="width: 170px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Gối Ngủ Công Thái Học Chống Đau Mỏi</h1>
+            <button id="buyBtn10" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">137.000₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+        <div class="item card"  data-sal="slide-up" style=" flex-direction: column;margin-bottom: 50px;margin-right:20px;--sal-duration: 0.8s; --sal-delay: 0s;">
+            <img src="data/img/sp11.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Dép bánh mì vân nhám nam nữ</h1>
+            <button id="buyBtn11" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">137.000₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+        <div class="item card"  data-sal="slide-up" style=" flex-direction: column;margin-bottom: 50px;margin-right:20px;--sal-duration: 0.8s; --sal-delay: 0s;">
+            <img src="data/img/sp12.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">JIUERBA Kính bảo vệ bức xạ</h1>
+            <button id="buyBtn12" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">54.441₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+
+        <button class="bubbles" style="display: flex; align-items: center;justify-content: center; margin : 50px" onclick="location.href='src/sign-up.html'">
+            <span class="text">Learn more</span>
+        </button>
+
+
+    </div>
+
+
+     
+
+    <script src="js/load.js"></script>
+
+</body>
+

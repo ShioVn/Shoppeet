@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop Template</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background: #f6f6f6;
+    }
+
+    header {
+      background: #fff;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: bold;
+      color: #ff5a1f;
+    }
+
+    main {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    justify-items: center;
+    }
+
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+    }
+
+        .card {
+        position: relative;
+        width: 190px;
+        height: 400px;
+        background-color: #b08018;
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+        padding: 12px;
+        gap: 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        color: white;
+        }
+
+        .card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        left: -5px;
+        margin: auto;
+        width: 200px;
+        height: 264px;
+        border-radius: 10px;
+        background: linear-gradient(-45deg, #e81cff 0%, #40c9ff 100% );
+        z-index: -10;
+        pointer-events: none;
+        transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .card::after {
+        content: "";
+        z-index: -1;
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(-45deg, #fc00ff 0%, #00dbde 100% );
+        transform: translate3d(0, 0, 0) scale(0.95);
+        filter: blur(20px);
+        }
+
+        .heading {
+        font-size: 20px;
+        text-transform: capitalize;
+        font-weight: 700;
+        }
+
+        .card p:not(.heading) {
+        font-size: 14px;
+        }
+
+        .card p:last-child {
+        color: #e81cff;
+        font-weight: 600;
+        }
+
+        .container {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        grid-template-rows: 1fr 1fr 1fr;
+        gap: 20px 20px;
+        }
+
+        .item:nth-child(1),
+        .item:nth-child(2),
+        .item:nth-child(3),
+        .item:nth-child(4),
+        .item:nth-child(5),
+        .item:nth-child(6),
+        .item:nth-child(7),
+        .item:nth-child(8),
+        .item:nth-child(9),
+        .item:nth-child(10),
+        .item:nth-child(11),
+        .item:nth-child(12) {
+        height: 300px;
+}
+
+        .card:hover::after {
+        filter: blur(30px);
+        }
+
+        .card:hover::before {
+        transform: rotate(-90deg) scaleX(1.34) scaleY(0.77);
+        }
+
+
+
+    .card img {
+      width: 60%;
+      height: 180px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .info {
+      padding: 10px;
+    }
+
+    .title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .price {
+      color: #ff5a1f;
+      font-weight: bold;
+    }
+    .text
+    {
+        font-size: 15px;
+        font-family: 'Roboto';
+    }
+    .item h1 
+    {
+        font-size: 15px;
+    }
+    /* From Uiverse.io by abrahamcalsin */ 
+button {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
+  background: #183153;
+  box-shadow: 0px 6px 24px 0px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  cursor: pointer;
+  border: none;
+}
+
+button:after {
+  content: " ";
+  width: 0%;
+  height: 100%;
+  background: #ffd401;
+  position: absolute;
+  transition: all 0.4s ease-in-out;
+  right: 0;
+}
+
+button:hover::after {
+  right: auto;
+  left: 0;
+  width: 100%;
+}
+
+button span {
+  text-align: center;
+  text-decoration: none;
+  width: 100%;
+  padding: 18px 25px;
+  color: #fff;
+  font-size: 1.125em;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  z-index: 20;
+  transition: all 0.3s ease-in-out;
+}
+
+button:hover span {
+  color: #183153;
+  animation: scaleUp 0.3s ease-in-out;
+}
+
+@keyframes scaleUp {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(0.95);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* From Uiverse.io by Muhammad-Usman-911 */ 
+.codepen-button {
+  font-family: monospace;
+  font-weight: bolder;
+  display: block;
+  cursor: pointer;
+  color: #000;
+  margin: 0 auto;
+  position: relative;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 6px;
+  overflow: hidden;
+  padding: 3px;
+  width: 160px;
+  isolation: isolate;
+  transform: scale(0.85);
+}
+
+.codepen-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 420%;
+  height: 120%;
+  background: linear-gradient(
+    115deg,
+    #628fbc,
+    hsl(0, 93%, 73%),
+    #f032a7,
+    #329af0,
+    #f032a7
+  );
+  background-size: 25% 100%;
+  animation: border-animation 0.75s linear infinite;
+  animation-play-state: paused;
+  translate: -5% 0%;
+  transition: translate 0.25s ease-out;
+}
+
+.codepen-button:hover::before {
+  animation-play-state: running;
+  transition-duration: 0.75s;
+  translate: 0% 0%;
+}
+
+@keyframes border-animation {
+  to {
+    transform: translateX(-25%);
+  }
+}
+
+.codepen-button span {
+  position: relative;
+  display: block;
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+  background: #fff;
+  border-radius: 3px;
+  height: 100%;
+}
+
+.codepen-button .span {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  gap: 10px;
+}
+
+.codepen-button .p {
+  margin: 0;
+}
+
+
+
+
+  </style>
+  
+  <!-- minimal add-to-cart with Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+<script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+  const SUPABASE_URL = 'https://cfzctoqsrkprcjstoqmp.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmemN0b3FzcmtwcmNqc3RvcW1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NDk5NjMsImV4cCI6MjA3ODMyNTk2M30.6p6c5JCwYimAp5kOQYvJ94jdciyhGNjB08c4uFI9eLc';
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+
+  async function getUserId(){
+    try{
+      const r = await supabase.auth.getSession();
+      return r?.data?.session?.user?.id ?? null;
+    }catch(e){
+      console.warn(e); return null;
+    }
+  }
+
+  function getProductIdFromCard(btn){
+    const card = btn.closest('.item.card') || btn.closest('.card') || btn.parentElement;
+    if(!card) return null;
+    if(card.dataset && card.dataset.productId) return Number(card.dataset.productId);
+    // fallback: try number in button id like buyBtn3 -> 3
+    if(btn.id){
+      const n = btn.id.replace(/\D/g,'');
+      if(n) return Number(n);
+    }
+    return null;
+  }
+
+  async function addToCart(productId){
+    const userId = await getUserId();
+    if(!userId){
+      alert('Bạn chưa đăng nhập. Vui lòng đăng nhập để lưu giỏ hàng.');
+      return;
+    }
+    if(!productId){
+      alert('Không xác định được product_id. Vui lòng thêm data-product-id cho card.');
+      return;
+    }
+    const { error } = await supabase
+      .from('cart_items')
+      .insert([{ user_id: userId, product_id: productId, quantity: 1 }]);
+    if(error){
+      console.error(error);
+      alert('Thêm giỏ thất bại: ' + error.message);
+    }else{
+      alert('Đã thêm vào giỏ!');
+    }
+  }
+
+  // gắn event cho mọi nút buy (class .fancy hoặc id bắt đầu buyBtn)
+  document.querySelectorAll('button.fancy, button[id^="buyBtn"]').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.preventDefault();
+      const pid = getProductIdFromCard(btn);
+      await addToCart(pid);
+    });
+  });
+</script>
+
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="../data/img/logo.png" alt="Logo" height="40" />
+
+        <a class="codepen-button" style="margin-left:1050px" href="../src/cart.html">
+            <span class="span">
+                <p class="p">Giỏ Hàng</p>
+            <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="1em"
+            viewBox="0 0 576 512"
+            fill="#000"
+            class="cart"
+            >
+            <path
+                d="M0 24C0 10.7 10.7 0 24 0H69.5c22 0 41.5 12.8 50.6 32h411c26.3 0 45.5 25 38.6 50.4l-41 152.3c-8.5 31.4-37 53.3-69.5 53.3H170.7l5.4 28.5c2.2 11.3 12.1 19.5 23.6 19.5H488c13.3 0 24 10.7 24 24s-10.7 24-24 24H199.7c-34.6 0-64.3-24.6-70.7-58.5L77.4 54.5c-.7-3.8-4-6.5-7.9-6.5H24C10.7 48 0 37.3 0 24zM128 464a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm336-48a48 48 0 1 1 0 96 48 48 0 1 1 0-96z"
+            ></path></svg></span
+        ></a>
+
+        <a class="codepen-button" style="margin-left:0px;width: 130px;" href="../src/profile.html">
+            <span class="span">
+                <p class="p">Profile</p>
+            <svg
+            height="1em">
+            </svg></span
+        ></a>
+
+
+        
+            
+    </div>
+
+
+  </header>
+        <main style="margin-top: 30px; max-width: 1400px;margin-left: 65px;">
+
+        <div class="item card" data-product-id="101" style=" flex-direction: column">
+            <img src="../data/img/sp1.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Loa Máy Tính Để Bàn MC D221</h1>
+            <button id="buyBtn1" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">59.000₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+
+       <div class="item card" data-product-id="102" style=" flex-direction: column">
+            <img src="../data/img/sp2.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Máy Sấy tóc gấp gọn tạo kiểu tóc</h1>
+            <button id="buyBtn2" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">59.000₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+
+        <div class="item card" data-product-id="103" style=" flex-direction: column">
+            <img src="../data/img/sp3.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Ốp lưng iphone 15/14/13/12/11/Pro</h1>
+            <button id="buyBtn3" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">20.000₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+        
+        <div class="item card" data-product-id="104" style=" flex-direction: column">
+            <img src="../data/img/sp4.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Ô Dù PTLUXURY 8 Nan Và 10 Nan</h1>
+            <button id="buyBtn4" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">89.999₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+
+        <div class="item card" data-product-id="105" style=" flex-direction: column">
+            <img src="../data/img/sp5.jpg" style="width: 143px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Áo khoác bomber dù 2 lớp trượt nước cản gió</h1>
+            <button id="buyBtn5" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">14.997₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+
+        <div class="item card" data-product-id="106" style=" flex-direction: column">
+            <img src="../data/img/sp6.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Combo Bánh Tráng Phơi Sương Dẻo</h1>
+            <button id="buyBtn6" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">115.000₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+        <div class="item card" data-product-id="107" style=" flex-direction: column">
+            <img src="../data/img/sp7.jpg" style="width: 170px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Nước Hoa Nữ Thơm Lâu Venus Hương Thơm Sang Trọng</h1>
+            <button id="buyBtn7" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">115.000₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+        <div class="item card" data-product-id="108" style=" flex-direction: column">
+            <img src="../data/img/sp8.jpg" style="width: 170px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Chuột không dây , Bluetooth, sạc pin bằng USB</h1>
+            <button id="buyBtn8" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">44.000₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+       <div class="item card" data-product-id="109" style=" flex-direction: column">
+            <img src="../data/img/sp9.jpg" style="width: 170px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Thắt lưng mặt xoay nam cao cấp thời trang</h1>
+            <button id="buyBtn9" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">44.000₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+        <div class="item card" data-product-id="110" style=" flex-direction: column">
+            <img src="../data/img/sp10.jpg" style="width: 170px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Gối Ngủ Công Thái Học Chống Đau Mỏi</h1>
+            <button id="buyBtn10" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">137.000₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+        <div class="item card" data-product-id="111" style=" flex-direction: column">
+
+            <img src="../data/img/sp11.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">Dép bánh mì vân nhám nam nữ</h1>
+            <button id="buyBtn11" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">137.000₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+        <div class="item card" data-product-id="112" style=" flex-direction: column">
+            <img src="../data/img/sp12.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
+            <h1 style="margin-top:10px;">JIUERBA Kính bảo vệ bức xạ</h1>
+            <button id="buyBtn12" class="fancy" style="margin-top: 10px;">
+                <span class="top-key"></span>
+                <span class="text">54.441₫</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+
+            
+        </main>
+
+
+</body>
+</html>

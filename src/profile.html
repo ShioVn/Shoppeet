@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop test - Trang Cá Nhân</title>
+    <script src="../js/tailwind.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sal.js@0.8.5/dist/sal.css">
+    <style>
+        * {
+            font-family: 'Roboto', sans-serif;
+        }
+        
+        body, html {
+            height: 100%;
+            scrollbar-width: none;  
+            -ms-overflow-style: none;
+        }
+
+        body::-webkit-scrollbar,
+        html::-webkit-scrollbar {
+            display: none;  
+        }
+        
+        body {
+            background: radial-gradient(125% 125% at 50% 10%, #ffffff 40%, #f59e0b 100%);
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        body.active {
+            background: radial-gradient(125% 125% at 50% 10%, #000000 40%, #f5b23d 100%);
+        }
+        
+        .switch {
+        font-size: 17px;
+        position: relative;
+        display: inline-block;
+        width: 3.5em;
+        height: 2em;
+        transform-style: preserve-3d;
+        perspective: 500px;
+        animation: toggle__animation 3s infinite;
+        }
+
+        .switch::before {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        filter: blur(20px);
+        z-index: -1;
+        border-radius: 50px;
+        background-color: #d8ff99;
+        background-image: radial-gradient(at 21% 46%, hsla(183,65%,60%,1) 0px, transparent 50%),
+        radial-gradient(at 23% 25%, hsla(359,74%,70%,1) 0px, transparent 50%),
+        radial-gradient(at 20% 1%, hsla(267,83%,75%,1) 0px, transparent 50%),
+        radial-gradient(at 86% 87%, hsla(204,69%,68%,1) 0px, transparent 50%),
+        radial-gradient(at 99% 41%, hsla(171,72%,77%,1) 0px, transparent 50%),
+        radial-gradient(at 55% 24%, hsla(138,60%,62%,1) 0px, transparent 50%);
+        }
+
+        /* Hide default HTML checkbox */
+        .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        }
+
+        /* The slider */
+        .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #fdfefedc;
+        transition: .4s;
+        border-radius: 30px;
+        }
+
+        .slider:before {
+        position: absolute;
+        content: "";
+        height: 1.4em;
+        width: 1.4em;
+        left: 0.3em;
+        bottom: 0.35em;
+        transition: .4s;
+        border-radius: 50%;
+        box-shadow: rgba(0, 0, 0, 0.17) 0px -10px 10px 0px inset,
+            rgba(0, 0, 0, 0.09) 0px -1px 15px -8px;
+        background-color: #ff99fd;
+        background-image: radial-gradient(at 81% 39%, hsla(327,79%,79%,1) 0px, transparent 50%),
+        radial-gradient(at 11% 72%, hsla(264,64%,79%,1) 0px, transparent 50%),
+        radial-gradient(at 23% 20%, hsla(75,98%,71%,1) 0px, transparent 50%);
+        }
+
+        .input__check:checked + .slider {
+        background-color: #17202A;
+        }
+
+        .input__check:checked + .slider:before {
+        transform: translateX(1.5em);
+        }
+
+        @keyframes toggle__animation {
+        0%, 100% {
+            transform: translateY(-10px) rotateX(15deg) rotateY(-20deg);
+        }
+
+        50% {
+            transform: translateY(0px) rotateX(15deg) rotateY(-20deg);
+        }
+        }
+
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: rgb(157, 107, 21,0);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+
+        .profile-card {
+            background: rgba(255, 196, 0, 0.58);
+            border: 2px solid rgb(0, 0, 0);
+            box-shadow: 12px 17px 51px rgba(0, 0, 0, 0.22);
+            backdrop-filter: blur(6px);
+            border-radius: 17px;
+            padding: 100px;
+            max-width: 900px;
+            width: 100%;
+            margin-top: 200px;
+        }
+
+        .profile-card.active {
+            background: rgba(225, 255, 0, 0.6);
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff7b00 0%, #f59e0b 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+            font-weight: bold;
+            margin: 0 auto 20px;
+            border: 5px solid white;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .stat-card {
+            background: rgba(157, 107, 21, 0.8);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #fff;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #ffae00;
+            text-shadow: 2px 2px #000;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #fff;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            border: 3px solid #ff7b00;
+            border-radius: 10px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #000;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .input-field:focus {
+            outline: none;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(255, 123, 0, 0.3);
+        }
+
+        .input-field:disabled {
+            background: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            border-color: #ccc;
+        }
+
+        .fancy {
+            background-color: transparent;
+            border: 2px solid #fff;
+            border-radius: 0;
+            box-sizing: border-box;
+            color: #000;
+            cursor: pointer;
+            display: inline-block;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin: 10px;
+            outline: none;
+            padding: 1em 2em;
+            position: relative;
+            text-align: center;
+            text-transform: uppercase;
+            transition: all 0.3s ease-in-out;
+            font-size: 14px;
+        }
+
+        .fancy::before {
+            content: " ";
+            width: 1.5625rem;
+            height: 2px;
+            background: #ff7b00;
+            top: 50%;
+            left: 1.5em;
+            position: absolute;
+            transform: translateY(-50%);
+            transition: background 0.3s linear, width 0.3s linear;
+        }
+
+        .fancy .text {
+            font-size: 1em;
+            padding-left: 2em;
+            display: block;
+            text-align: left;
+            color: #ff7b00;
+            transition: all 0.3s;
+        }
+
+        .fancy .top-key {
+            height: 2px;
+            width: 1.5625rem;
+            top: -2px;
+            left: 0.625rem;
+            position: absolute;
+            background: #ff7b00;
+            transition: width 0.5s ease-out, left 0.3s ease-out;
+        }
+
+        .fancy .bottom-key-1 {
+            height: 2px;
+            width: 1.5625rem;
+            right: 1.875rem;
+            bottom: -2px;
+            position: absolute;
+            background: #ff7b00;
+            transition: width 0.5s ease-out, right 0.3s ease-out;
+        }
+
+        .fancy .bottom-key-2 {
+            height: 2px;
+            width: 0.625rem;
+            right: 0.625rem;
+            bottom: -2px;
+            position: absolute;
+            background: #ff7b00;
+            transition: width 0.5s ease-out, right 0.3s ease-out;
+        }
+
+        .fancy:hover {
+            background: white;
+        }
+
+        .fancy:hover::before {
+            width: 0.9375rem;
+            background: black;
+        }
+
+        .fancy:hover .text {
+            color: black;
+            padding-left: 1.5em;
+        }
+
+        .fancy:hover .top-key {
+            left: -2px;
+            width: 0px;
+        }
+
+        .fancy:hover .bottom-key-1,
+        .fancy:hover .bottom-key-2 {
+            right: 0;
+            width: 0;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ff7b00;
+            text-shadow: 2px 2px #000;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ff7b00;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .switch {
+            font-size: 17px;
+            position: relative;
+            display: inline-block;
+            width: 3.5em;
+            height: 2em;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #fdfefedc;
+            transition: .4s;
+            border-radius: 30px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 1.4em;
+            width: 1.4em;
+            left: 0.3em;
+            bottom: 0.35em;
+            transition: .4s;
+            border-radius: 50%;
+            background-color: #ff99fd;
+            background-image: radial-gradient(at 81% 39%, hsla(327,79%,79%,1) 0px, transparent 50%);
+        }
+
+        .input__check:checked + .slider {
+            background-color: #17202A;
+        }
+
+        .input__check:checked + .slider:before {
+            transform: translateX(1.5em);
+        }
+    </style>
+</head>
+
+<script src="https://cdn.jsdelivr.net/npm/sal.js@0.8.5/dist/sal.min.js"></script>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const SUPABASE_URL = 'https://cfzctoqsrkprcjstoqmp.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmemN0b3FzcmtwcmNqc3RvcW1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NDk5NjMsImV4cCI6MjA3ODMyNTk2M30.6p6c5JCwYimAp5kOQYvJ94jdciyhGNjB08c4uFI9eLc'
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+const messageDiv = document.getElementById('message')
+const emailSpan = document.getElementById('userEmail')
+const avatarDiv = document.getElementById('avatar')
+const fullNameInput = document.getElementById('fullName')
+const phoneInput = document.getElementById('phone')
+const addressInput = document.getElementById('address')
+const editBtn = document.getElementById('editBtn')
+const saveBtn = document.getElementById('saveBtn')
+const cancelBtn = document.getElementById('cancelBtn')
+const logoutBtn = document.getElementById('logoutBtn')
+const orderCountSpan = document.getElementById('orderCount')
+const cartCountSpan = document.getElementById('cartCount')
+const nightmodeToggle = document.getElementById('Nightmode')
+const logoBtn = document.getElementById('logoBtn')
+
+let currentUser = null
+let isEditing = false
+
+function showMessage(msg, type = 'error') {
+  messageDiv.textContent = msg
+  messageDiv.className = `message ${type}`
+  messageDiv.style.display = 'block'
+  
+  setTimeout(() => {
+    messageDiv.style.display = 'none'
+  }, 5000)
+}
+
+function getInitials(email) {
+  if (!email) return '?'
+  return email.charAt(0).toUpperCase()
+}
+
+function toggleEdit(editing) {
+  isEditing = editing
+  fullNameInput.disabled = !editing
+  phoneInput.disabled = !editing
+  addressInput.disabled = !editing
+  
+  if (editing) {
+    editBtn.style.display = 'none'
+    saveBtn.style.display = 'inline-block'
+    cancelBtn.style.display = 'inline-block'
+  } else {
+    editBtn.style.display = 'inline-block'
+    saveBtn.style.display = 'none'
+    cancelBtn.style.display = 'none'
+  }
+}
+
+async function loadUserProfile() {
+  try {
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    
+    if (userError || !user) {
+      window.location.href = '../src/sign-in.html'
+      return
+    }
+    
+    currentUser = user
+    emailSpan.textContent = user.email
+    avatarDiv.textContent = getInitials(user.email)
+    
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+    
+    if (profile) {
+      fullNameInput.value = profile.full_name || ''
+      phoneInput.value = profile.phone || ''
+      addressInput.value = profile.address || ''
+    } else {
+      await supabase.from('profiles').insert({
+        id: user.id,
+        full_name: '',
+        phone: '',
+        address: '',
+        email: user.email
+      })
+    }
+    
+    await loadStatistics(user.id)
+    
+  } catch (err) {
+    console.error('Load profile error:', err)
+    showMessage('Không thể tải thông tin người dùng', 'error')
+  }
+}
+
+async function loadStatistics(userId) {
+  try {
+    const { count: orderCount } = await supabase
+      .from('orders')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+    
+    orderCountSpan.textContent = orderCount || 0
+    
+    const { count: cartCount } = await supabase
+      .from('cart_items')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+    
+    cartCountSpan.textContent = cartCount || 0
+    
+  } catch (err) {
+    console.error('Load statistics error:', err)
+  }
+}
+
+async function saveProfile() {
+  try {
+    if (!currentUser) return
+    
+    const fullName = fullNameInput.value.trim()
+    const phone = phoneInput.value.trim()
+    const address = addressInput.value.trim()
+    
+    saveBtn.disabled = true
+    saveBtn.querySelector('.text').textContent = 'Đang lưu...'
+    
+    const { error } = await supabase
+      .from('profiles')
+      .upsert({
+        id: currentUser.id,
+        full_name: fullName,
+        phone: phone,
+        address: address,
+        email: currentUser.email
+      })
+    
+    if (error) throw error
+    
+    showMessage('Cập nhật thông tin thành công!', 'success')
+    toggleEdit(false)
+    
+  } catch (err) {
+    console.error('Save profile error:', err)
+    showMessage('Không thể cập nhật thông tin', 'error')
+  } finally {
+    saveBtn.disabled = false
+    saveBtn.querySelector('.text').textContent = 'Lưu'
+  }
+}
+
+async function logout() {
+  try {
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+    window.location.href = '../src/sign-in.html'
+  } catch (err) {
+    console.error('Logout error:', err)
+    showMessage('Không thể đăng xuất', 'error')
+  }
+}
+
+// Event listeners
+editBtn.addEventListener('click', () => toggleEdit(true))
+saveBtn.addEventListener('click', saveProfile)
+cancelBtn.addEventListener('click', () => {
+  loadUserProfile()
+  toggleEdit(false)
+})
+logoutBtn.addEventListener('click', logout)
+logoBtn.addEventListener('click', () => {
+  window.location.href = '../src/main.html'
+})
+
+// Night mode
+nightmodeToggle.addEventListener('change', function() {
+  const body = document.body
+  const card = document.querySelector('.profile-card')
+  
+  if (this.checked) {
+    body.classList.add('active')
+    card.classList.add('active')
+  } else {
+    body.classList.remove('active')
+    card.classList.remove('active')
+  }
+})
+
+loadUserProfile()
+</script>
+
+<body>
+    <!-- Top Bar -->
+    <div id="topBar" class="top-bar">
+        <button id="logoBtn" style="border: none; background: none; cursor: pointer;">
+            <img src="../data/img/logo.png" alt="Logo" style="height:40px; width:auto;">
+        </button>
+
+        <label class="switch">
+            <input type="checkbox" class="input__check" id="Nightmode">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="profile-card" data-sal="zoom-in" style="--sal-duration: 0.8s;margin:200px">
+        <div id="message" class="message"></div>
+        
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 30px;margin-top:150px">
+            <div id="avatar" class="avatar"></div>
+            <h1>Thông Tin Cá Nhân</h1>
+            <p style="color: #9d6b15; font-weight: 600; font-size: 16px;" id="userEmail">loading...</p>
+        </div>
+        
+        <!-- Statistics -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <div class="stat-card">
+                <div class="stat-number" id="orderCount">0</div>
+                <div class="stat-label">Đơn Hàng</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="cartCount">0</div>
+                <div class="stat-label">Sản Phẩm Trong Giỏ</div>
+            </div>
+        </div>
+        
+        
+        
+        <!-- Buttons -->
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+            <button id="editBtn" class="fancy">
+                <span class="top-key"></span>
+                <span class="text">Chỉnh Sửa</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+            
+            <button id="saveBtn" class="fancy" style="display: none;">
+                <span class="top-key"></span>
+                <span class="text">Lưu</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+            
+            <button id="cancelBtn" class="fancy" style="display: none;">
+                <span class="top-key"></span>
+                <span class="text">Hủy</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+            
+            <button id="logoutBtn" class="fancy">
+                <span class="top-key"></span>
+                <span class="text">Đăng Xuất</span>
+                <span class="bottom-key-1"></span>
+                <span class="bottom-key-2"></span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        sal();
+    </script>
+</body>
+</html>

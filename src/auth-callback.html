@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OAuth Callback</title>
+</head>
+<body>
+  <p>Đang xử lý đăng nhập, vui lòng chờ...</p>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+    const SUPABASE_URL = 'https://cfzctoqsrkprcjstoqmp.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmemN0b3FzcmtwcmNqc3RvcW1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NDk5NjMsImV4cCI6MjA3ODMyNTk2M30.6p6c5JCwYimAp5kOQYvJ94jdciyhGNjB08c4uFI9eLc'
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    async function handleOAuthCallback() {
+      try {
+        const { data, error } = await supabase.auth.getSessionFromUrl({ storeSession: true })
+        if (error) {
+          console.error('OAuth callback error:', error)
+          alert('Có lỗi xảy ra khi xử lý đăng nhập OAuth.')
+          return
+        }
+
+        if (data.session) {
+          console.log('Đăng nhập thành công', data.session)
+          window.location.href = '../src/main.html'
+        } else {
+          alert('Không có session. Vui lòng thử lại.')
+        }
+      } catch (err) {
+        console.error('Unexpected error:', err)
+        alert('Có lỗi xảy ra. Kiểm tra console.')
+      }
+    }
+
+    handleOAuthCallback()
+  </script>
+</body>
+</html>
