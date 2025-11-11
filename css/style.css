@@ -795,10 +795,27 @@ radial-gradient(at 55% 24%, hsla(138,60%,62%,1) 0px, transparent 50%);
     z-index: 10000;       
     pointer-events: none; 
     font-family: 'Poppins', sans-serif;
-    transition: 0.3s ease-in;
 }
 
-#fixedText:hover{
-  scale(1.1);
-  color: #4639ff;
+
+#Shio {
+  position: relative;
+  color: #2b5884;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#Shio::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #ff00c3;
+  transition: width 0.3s ease;
+}
+
+#Shio:hover::after {
+  width: 100%;
 }
