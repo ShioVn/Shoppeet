@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aó khoác bomber dù hai lớp nam nữ JULIDO trượt nước</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin-bottom: 20px;
+        }
+
+        .product-card {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: bold;
+      color: #ff5a1f;
+      }
+
+        .product-header {
+            background: #D4A017;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .product-header h1 {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .heading {
+        font-size: 20px;
+        text-transform: capitalize;
+        font-weight: 700;
+        }
+        header {
+      background: #c67401;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #ddd;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 1000;
+    
+    }
+        .product-image {
+            background: #F5F5DC;
+            height: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px dashed #D4A017;
+            margin: 30px;
+            border-radius: 10px;
+        }
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+            object-position: center; 
+            display: block;
+        }
+
+        .product-image::before {
+            font-size: 20px;
+            color: #999;
+        }
+
+        .product-info {
+            padding: 0 30px 30px 30px;
+        }
+
+        .info-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #FFFEF0;
+            border-radius: 8px;
+            border-left: 4px solid #D4A017;
+        }
+
+        .info-section h3 {
+            color: #D4A017;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .info-content {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .price-box {
+            background: #D4A017;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .price-box h3 {
+            color: white;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .price {
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .buy-button {
+            width: 100%;
+            background: #D4A017;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .buy-button:hover {
+            background: #B8860B;
+        }
+
+        @media (max-width: 768px) {
+            .product-header h1 {
+                font-size: 22px;
+            }
+            
+            .product-image {
+                margin: 20px;
+                height: 250px;
+            }
+        }
+        .codepen-button {
+  font-family: monospace;
+  font-weight: bolder;
+  display: block;
+  cursor: pointer;
+  color: #000;
+  margin: 0 auto;
+  position: relative;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 6px;
+  overflow: hidden;
+  padding: 3px;
+  width: 160px;
+  isolation: isolate;
+  transform: scale(0.85);
+}
+
+.codepen-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 420%;
+  height: 120%;
+  background: linear-gradient(
+    115deg,
+    #628fbc,
+    hsl(0, 93%, 73%),
+    #f032a7,
+    #329af0,
+    #f032a7
+  );
+  background-size: 25% 100%;
+  animation: border-animation 0.75s linear infinite;
+  animation-play-state: paused;
+  translate: -5% 0%;
+  transition: translate 0.25s ease-out;
+}
+
+.codepen-button:hover::before {
+  animation-play-state: running;
+  transition-duration: 0.75s;
+  translate: 0% 0%;
+}
+
+@keyframes border-animation {
+  to {
+    transform: translateX(-25%);
+  }
+}
+
+.codepen-button span {
+  position: relative;
+  display: block;
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+  background: #fff;
+  border-radius: 3px;
+  height: 100%;
+}
+
+.codepen-button .span {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  gap: 10px;
+}
+
+.codepen-button .p {
+  margin: 0;
+}
+    </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <a href="../main.html"><img src="../../data/img/logo.png" alt="Logo" height="40" /> </a>
+
+        <a class="codepen-button" style="margin-left:1050px" href="../cart.html">
+            <span class="span">
+                <p class="p">Giỏ Hàng</p>
+            <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="1em"
+            viewBox="0 0 576 512"
+            fill="#000"
+            class="cart"
+            >
+            <path
+                d="M0 24C0 10.7 10.7 0 24 0H69.5c22 0 41.5 12.8 50.6 32h411c26.3 0 45.5 25 38.6 50.4l-41 152.3c-8.5 31.4-37 53.3-69.5 53.3H170.7l5.4 28.5c2.2 11.3 12.1 19.5 23.6 19.5H488c13.3 0 24 10.7 24 24s-10.7 24-24 24H199.7c-34.6 0-64.3-24.6-70.7-58.5L77.4 54.5c-.7-3.8-4-6.5-7.9-6.5H24C10.7 48 0 37.3 0 24zM128 464a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm336-48a48 48 0 1 1 0 96 48 48 0 1 1 0-96z"
+            ></path></svg></span
+        ></a>
+
+        <a class="codepen-button" style="margin-left:0px;width: 130px;" href="../profile.html">
+            <span class="span">
+                <p class="p">Profile</p>
+            <svg
+            height="1em">
+            </svg></span
+        ></a>
+
+
+        
+            
+    </div>
+
+
+  </header>
+    <div class="product-card">
+        <div class="product-header">
+            <h1>Aó khoác bomber dù hai lớp nam nữ JULIDO trượt nước</h1>
+        </div>
+
+        <div class="product-image"> <img src="../../data/img/sp5.jpg"></div>
+
+        <div class="product-info">
+            <div class="info-section">
+                <h3>Chi tiết Aó khoác JULIDO</h3>
+                <h3>Chất liệu :dù tráng bạc cản gió cản nước chống tia uv </h3>
+                
+            </div>
+            <div class="price-box">
+                <h3>GIÁ BÁN</h3>
+                <div class="price">14.997₫</div>
+            </div>
+
+            <button data-product-id="105" class="buy-button" id="buyBtn5">ĐẶT HÀNG NGAY</button>
+        </div>
+    </div>
+</body>
+</html>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const SUPABASE_URL = 'https://cfzctoqsrkprcjstoqmp.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmemN0b3FzcmtwcmNqc3RvcW1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NDk5NjMsImV4cCI6MjA3ODMyNTk2M30.6p6c5JCwYimAp5kOQYvJ94jdciyhGNjB08c4uFI9eLc';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Lấy user id từ session
+async function getUserId(){
+  try{
+    const r = await supabase.auth.getSession();
+    return r?.data?.session?.user?.id ?? null;
+  }catch(e){
+    console.warn(e);
+    return null;
+  }
+}
+
+function getProductIdFromCard(btn){
+  // tìm element .card có data-product-id
+  const card = btn.closest('[data-product-id]') || btn.closest('.card') || btn.parentElement;
+  if(!card) return null;
+  const pid = card.dataset.productId || card.getAttribute('data-product-id');
+  return pid ? Number(pid) : null;
+}
+
+async function addToCart(productId){
+  const userId = await getUserId();
+  if(!userId){
+    alert('Bạn chưa đăng nhập. Vui lòng đăng nhập để lưu giỏ hàng.');
+    // optionally redirect to login page
+    // window.location.href = '/signin.html';
+    return;
+  }
+  if(!productId){
+    alert('Không xác định được product_id. Vui lòng thêm data-product-id cho card.');
+    return;
+  }
+
+  // 1) kiểm tra đã có item chưa
+  const { data: existing, error: selErr } = await supabase
+    .from('cart_items')
+    .select('id, quantity')
+    .eq('user_id', userId)
+    .eq('product_id', productId)
+    .limit(1);
+
+  if(selErr){
+    console.error('Lỗi khi kiểm tra cart_items', selErr);
+    alert('Lỗi khi thêm giỏ (kiểm tra).');
+    return;
+  }
+
+  if(existing && existing.length > 0){
+    // update quantity
+    const item = existing[0];
+    const { error: updErr } = await supabase
+      .from('cart_items')
+      .update({ quantity: item.quantity + 1 })
+      .eq('id', item.id);
+
+    if(updErr){
+      console.error('Lỗi cập nhật số lượng', updErr);
+      alert('Lỗi khi cập nhật giỏ hàng.');
+    } else {
+      // có thể thay bằng toast nhẹ
+      alert('Đã tăng số lượng trong giỏ.');
+      // optional: window.location.href = '../src/cart.html';
+    }
+  } else {
+    // insert mới
+    const { error: insErr } = await supabase
+      .from('cart_items')
+      .insert([{ user_id: userId, product_id: productId, quantity: 1 }]);
+
+    if(insErr){
+      console.error('Lỗi insert cart_items', insErr);
+      // Nếu lỗi unique (race condition), có thể thử update thay thế — đơn giản: báo lỗi
+      alert('Thêm vào giỏ thất bại: ' + (insErr.message || insErr.details || ''));
+    } else {
+      alert('Đã thêm vào giỏ!');
+      // optional: window.location.href = '../src/cart.html';
+    }
+  }
+}
+
+// chờ DOM sẵn sàng trước khi gắn sự kiện
+document.addEventListener('DOMContentLoaded', () => {
+  // gắn cho các nút hiện có
+  document.querySelectorAll('button.fancy, button[id^="buyBtn"], .button').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      // nếu nút chứa data-product-id tự thân (hiếm), ưu tiên đó
+      const fromBtnPid = btn.dataset?.productId ? Number(btn.dataset.productId) : null;
+      const pid = fromBtnPid || getProductIdFromCard(btn);
+      await addToCart(pid);
+    });
+  });
+
+  // nếu bạn có nút giỏ hàng (link), giữ nguyên href
+  const cartLink = document.querySelector('a[href*="cart.html"], a[href*="cart"]');
+  if(cartLink){
+    // nothing
+  }
+});
+</script>

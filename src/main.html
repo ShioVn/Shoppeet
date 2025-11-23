@@ -352,116 +352,7 @@
 
 
   </style>
-  
-  <!-- minimal add-to-cart with Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
-<!-- --- Thay thế script hiện tại bằng script này --- -->
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-const SUPABASE_URL = 'https://cfzctoqsrkprcjstoqmp.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmemN0b3FzcmtwcmNqc3RvcW1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NDk5NjMsImV4cCI6MjA3ODMyNTk2M30.6p6c5JCwYimAp5kOQYvJ94jdciyhGNjB08c4uFI9eLc';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// Lấy user id từ session
-async function getUserId(){
-  try{
-    const r = await supabase.auth.getSession();
-    return r?.data?.session?.user?.id ?? null;
-  }catch(e){
-    console.warn(e);
-    return null;
-  }
-}
-
-function getProductIdFromCard(btn){
-  // tìm element .card có data-product-id
-  const card = btn.closest('[data-product-id]') || btn.closest('.card') || btn.parentElement;
-  if(!card) return null;
-  const pid = card.dataset.productId || card.getAttribute('data-product-id');
-  return pid ? Number(pid) : null;
-}
-
-async function addToCart(productId){
-  const userId = await getUserId();
-  if(!userId){
-    alert('Bạn chưa đăng nhập. Vui lòng đăng nhập để lưu giỏ hàng.');
-    // optionally redirect to login page
-    // window.location.href = '/signin.html';
-    return;
-  }
-  if(!productId){
-    alert('Không xác định được product_id. Vui lòng thêm data-product-id cho card.');
-    return;
-  }
-
-  // 1) kiểm tra đã có item chưa
-  const { data: existing, error: selErr } = await supabase
-    .from('cart_items')
-    .select('id, quantity')
-    .eq('user_id', userId)
-    .eq('product_id', productId)
-    .limit(1);
-
-  if(selErr){
-    console.error('Lỗi khi kiểm tra cart_items', selErr);
-    alert('Lỗi khi thêm giỏ (kiểm tra).');
-    return;
-  }
-
-  if(existing && existing.length > 0){
-    // update quantity
-    const item = existing[0];
-    const { error: updErr } = await supabase
-      .from('cart_items')
-      .update({ quantity: item.quantity + 1 })
-      .eq('id', item.id);
-
-    if(updErr){
-      console.error('Lỗi cập nhật số lượng', updErr);
-      alert('Lỗi khi cập nhật giỏ hàng.');
-    } else {
-      // có thể thay bằng toast nhẹ
-      alert('Đã tăng số lượng trong giỏ.');
-      // optional: window.location.href = '../src/cart.html';
-    }
-  } else {
-    // insert mới
-    const { error: insErr } = await supabase
-      .from('cart_items')
-      .insert([{ user_id: userId, product_id: productId, quantity: 1 }]);
-
-    if(insErr){
-      console.error('Lỗi insert cart_items', insErr);
-      // Nếu lỗi unique (race condition), có thể thử update thay thế — đơn giản: báo lỗi
-      alert('Thêm vào giỏ thất bại: ' + (insErr.message || insErr.details || ''));
-    } else {
-      alert('Đã thêm vào giỏ!');
-      // optional: window.location.href = '../src/cart.html';
-    }
-  }
-}
-
-// chờ DOM sẵn sàng trước khi gắn sự kiện
-document.addEventListener('DOMContentLoaded', () => {
-  // gắn cho các nút hiện có
-  document.querySelectorAll('button.fancy, button[id^="buyBtn"], .button').forEach(btn=>{
-    btn.addEventListener('click', async (e)=>{
-      e.preventDefault();
-      // nếu nút chứa data-product-id tự thân (hiếm), ưu tiên đó
-      const fromBtnPid = btn.dataset?.productId ? Number(btn.dataset.productId) : null;
-      const pid = fromBtnPid || getProductIdFromCard(btn);
-      await addToCart(pid);
-    });
-  });
-
-  // nếu bạn có nút giỏ hàng (link), giữ nguyên href
-  const cartLink = document.querySelector('a[href*="cart.html"], a[href*="cart"]');
-  if(cartLink){
-    // nothing
-  }
-});
-</script>
 
 
 </head>
@@ -505,6 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="item card" data-product-id="101" style=" flex-direction: column;align-items: center;">
             <img src="../data/img/sp1.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
             <h1 style="margin-top:10px;">Loa Máy Tính Để Bàn MC D221</h1>
+            <a href="./product_intro/sp1.html" style="display: block; text-decoration: none; pointer-events: auto;">
             <div data-tooltip="Price:-59.000₫" class="button" id="buyBtn1">
               <div class="button-wrapper">
                 <div class="text">Add to cart</div>
@@ -515,6 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   </span>
                 </div>
             </div>
+            </a> 
 
 
         </div>
@@ -522,6 +415,8 @@ document.addEventListener('DOMContentLoaded', () => {
        <div class="item card" data-product-id="102" style=" flex-direction: column;align-items: center;">
             <img src="../data/img/sp2.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
             <h1 style="margin-top:10px;">Máy Sấy tóc gấp gọn tạo kiểu tóc</h1>
+            <a href="./product_intro/sp2.html" style="display: block; text-decoration: none; pointer-events: auto;">
+
             <div data-tooltip="Price:-59.000₫" class="button" id="buyBtn2">
               <div class="button-wrapper">
                 <div class="text">Add to cart</div>
@@ -532,11 +427,14 @@ document.addEventListener('DOMContentLoaded', () => {
                   </span>
                 </div>
             </div>
+            </a>
         </div>
 
         <div class="item card" data-product-id="103" style=" flex-direction: column;align-items: center;">
             <img src="../data/img/sp3.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
             <h1 style="margin-top:10px;">Ốp lưng iphone 15/14/13/12/11/Pro</h1>
+            <a href="./product_intro/sp3.html" style="display: block; text-decoration: none; pointer-events: auto;">
+
             <div data-tooltip="Price:-20.000₫" class="button" id="buyBtn3">
               <div class="button-wrapper">
                 <div class="text">Add to cart</div>
@@ -547,11 +445,13 @@ document.addEventListener('DOMContentLoaded', () => {
                   </span>
                 </div>
             </div>
+            </a>
         </div>
         
         <div class="item card" data-product-id="104" style=" flex-direction: column;align-items: center;">
             <img src="../data/img/sp4.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
             <h1 style="margin-top:10px;">Ô Dù PTLUXURY 8 Nan Và 10 Nan</h1>
+            <a href="./product_intro/sp4.html" style="display: block; text-decoration: none; pointer-events: auto;">
             <div data-tooltip="Price:-89.999₫" class="button" id="buyBtn4">
               <div class="button-wrapper">
                 <div class="text">Add to cart</div>
@@ -562,11 +462,13 @@ document.addEventListener('DOMContentLoaded', () => {
                   </span>
                 </div>
             </div>
+          </a>
         </div>
 
         <div class="item card" data-product-id="105" style=" flex-direction: column;align-items: center;">
             <img src="../data/img/sp5.jpg" style="width: 143px; height: auto;border-radius: 9px;margin-top:0px">
             <h1 style="margin-top:10px;">Áo khoác bomber dù 2 lớp trượt nước cản gió</h1>
+            <a href="./product_intro/sp5.html" style="display: block; text-decoration: none; pointer-events: auto;">
             <div data-tooltip="Price:-14.997₫" class="button" id="buyBtn5">
               <div class="button-wrapper">
                 <div class="text">Add to cart</div>
@@ -577,11 +479,13 @@ document.addEventListener('DOMContentLoaded', () => {
                   </span>
                 </div>
             </div>
+          </a>
         </div>
 
         <div class="item card" data-product-id="106" style=" flex-direction: column;align-items: center;">
             <img src="../data/img/sp6.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
             <h1 style="margin-top:10px;">Combo Bánh Tráng Phơi Sương Dẻo</h1>
+            <a href="./product_intro/sp6.html" style="display: block; text-decoration: none; pointer-events: auto;">
             <div data-tooltip="Price:-115.000₫" class="button" id="buyBtn6">
               <div class="button-wrapper">
                 <div class="text">Add to cart</div>
@@ -592,10 +496,12 @@ document.addEventListener('DOMContentLoaded', () => {
                   </span>
                 </div>
             </div>
+            </a>
         </div>
         <div class="item card" data-product-id="107" style=" flex-direction: column;align-items: center;">
             <img src="../data/img/sp7.jpg" style="width: 170px; height: auto;border-radius: 9px;margin-top:0px">
             <h1 style="margin-top:10px;">Nước Hoa Nữ Thơm Lâu Venus Hương Thơm Sang Trọng</h1>
+            <a href="./product_intro/sp7.html" style="display: block; text-decoration: none; pointer-events: auto;">
             <div data-tooltip="Price:-115.000₫" class="button" id="buyBtn7">
               <div class="button-wrapper">
                 <div class="text">Add to cart</div>
@@ -606,10 +512,12 @@ document.addEventListener('DOMContentLoaded', () => {
                   </span>
                 </div>
             </div>
+            </a>
         </div>
         <div class="item card" data-product-id="108" style=" flex-direction: column;align-items: center;">
             <img src="../data/img/sp8.jpg" style="width: 170px; height: auto;border-radius: 9px;margin-top:0px">
             <h1 style="margin-top:10px;">Chuột không dây , Bluetooth, sạc pin bằng USB</h1>
+            <a href="./product_intro/sp8.html" style="display: block; text-decoration: none; pointer-events: auto;">
             <div data-tooltip="Price:-44.000₫" class="button" id="buyBtn8">
               <div class="button-wrapper">
                 <div class="text">Add to cart</div>
@@ -620,10 +528,12 @@ document.addEventListener('DOMContentLoaded', () => {
                   </span>
                 </div>
             </div>
+            </a>
         </div>
        <div class="item card" data-product-id="109" style=" flex-direction: column;align-items: center;">
             <img src="../data/img/sp9.jpg" style="width: 170px; height: auto;border-radius: 9px;margin-top:0px">
             <h1 style="margin-top:10px;">Thắt lưng mặt xoay nam cao cấp thời trang</h1>
+            <a href="./product_intro/sp9.html" style="display: block; text-decoration: none; pointer-events: auto;">
             <div data-tooltip="Price:-44.000₫" class="button" id="buyBtn9">
               <div class="button-wrapper">
                 <div class="text">Add to cart</div>
@@ -634,10 +544,12 @@ document.addEventListener('DOMContentLoaded', () => {
                   </span>
                 </div>
             </div>
+            </a>
         </div>
         <div class="item card" data-product-id="110" style=" flex-direction: column;align-items: center;">
             <img src="../data/img/sp10.jpg" style="width: 170px; height: auto;border-radius: 9px;margin-top:0px">
             <h1 style="margin-top:10px;">Gối Ngủ Công Thái Học Chống Đau Mỏi</h1>
+            <a href="./product_intro/sp10.html" style="display: block; text-decoration: none; pointer-events: auto;">
             <div data-tooltip="Price:-137.000₫" class="button" id="buyBtn10">
               <div class="button-wrapper">
                 <div class="text">Add to cart</div>
@@ -648,11 +560,13 @@ document.addEventListener('DOMContentLoaded', () => {
                   </span>
                 </div>
             </div>
+            </a>
         </div>
         <div class="item card" data-product-id="111" style=" flex-direction: column;align-items: center;">
 
             <img src="../data/img/sp11.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
             <h1 style="margin-top:10px;">Dép bánh mì vân nhám nam nữ</h1>
+            <a href="./product_intro/sp11.html" style="display: block; text-decoration: none; pointer-events: auto;">
             <div data-tooltip="Price:-137.000₫" class="button" id="buyBtn11">
               <div class="button-wrapper">
                 <div class="text">Add to cart</div>
@@ -663,10 +577,12 @@ document.addEventListener('DOMContentLoaded', () => {
                   </span>
                 </div>
             </div>
+            </a>
         </div>
         <div class="item card" data-product-id="112" style=" flex-direction: column;align-items: center;">
             <img src="../data/img/sp12.jpg" style="width: 190px; height: auto;border-radius: 9px;margin-top:0px">
             <h1 style="margin-top:10px;">JIUERBA Kính bảo vệ bức xạ</h1>
+            <a href="./product_intro/sp12.html" style="display: block; text-decoration: none; pointer-events: auto;">
             <div data-tooltip="Price:-54.441₫" class="button" id="buyBtn12">
               <div class="button-wrapper">
                 <div class="text">Add to cart</div>
@@ -677,6 +593,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   </span>
                 </div>
             </div>
+            </a>
         </div>
 
             
