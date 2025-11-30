@@ -142,6 +142,83 @@
             transition: background 0.3s;
         }
 
+        /* CSS cho phần thông tin người bán */
+
+        .seller-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #FFFEF0;
+            border-radius: 8px;
+            border-left: 4px solid #D4A017;
+        }
+
+        .seller-section h3 {
+            color: #D4A017;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .seller-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .seller-avatar {
+            flex-shrink: 0;
+        }
+
+        .seller-details {
+            flex-grow: 1;
+        }
+
+        .seller-details p {
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .seller-name {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .seller-button {
+            background: #D4A017;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .seller-button:hover {
+            background: #B8860B;
+        }
+
+        .loading {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        /* Responsive cho mobile */
+        @media (max-width: 768px) {
+            .seller-info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .seller-avatar {
+                margin: 0 auto;
+            }
+        }
+
         .buy-button:hover {
             background: #B8860B;
         }
@@ -298,6 +375,26 @@
                 <h3>- Sơn bóng 3 lớp chống nhiệt, dễ vệ sinh, bền màu.</h3>
                 <h3>- Nhiệt không đổi, ko gây hư tổn tóc    </h3>
             </div>
+                        
+                <div class="seller-section" id="sellerSection">
+                    <h3>👤 Thông tin người bán</h3>
+                    <div class="loading" id="sellerLoading">Đang tải thông tin người bán...</div>
+                    <div class="seller-info" id="sellerInfo" style="display: none;">
+                        <div class="seller-avatar">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#D4A017" width="60" height="60">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                        </div>
+                        <div class="seller-details">
+                            <p class="seller-name"><strong>Tên cửa hàng:</strong> <span id="sellerName">...</span></p>
+                            <p class="seller-email">📧 Email: <span id="sellerEmail">...</span></p>
+                            <p class="seller-id">🆔 Seller ID: <span id="sellerId">...</span></p>
+                            <p class="seller-joined">📅 Tham gia: <span id="sellerJoined">...</span></p>
+                            <button class="seller-button" onclick="viewSellerShop()">Xem Shop</button>
+                        </div>
+                    </div>
+                </div>
+
             <div class="price-box">
                 <h3>GIÁ BÁN</h3>
                 <div class="price">59.000₫</div>
@@ -337,82 +434,183 @@ function getProductIdFromCard(btn){
   return pid ? Number(pid) : null;
 }
 
-async function addToCart(productId){
+async function addToCart(productId) {
   const userId = await getUserId();
-  if(!userId){
+  if (!userId) {
     alert('Bạn chưa đăng nhập. Vui lòng đăng nhập để lưu giỏ hàng.');
-    // optionally redirect to login page
-    // window.location.href = '/signin.html';
     return;
   }
-  if(!productId){
-    alert('Không xác định được product_id. Vui lòng thêm data-product-id cho card.');
-    return;
-  }
-
-  // 1) kiểm tra đã có item chưa
-  const { data: existing, error: selErr } = await supabase
-    .from('cart_items')
-    .select('id, quantity')
-    .eq('user_id', userId)
-    .eq('product_id', productId)
-    .limit(1);
-
-  if(selErr){
-    console.error('Lỗi khi kiểm tra cart_items', selErr);
-    alert('Lỗi khi thêm giỏ (kiểm tra).');
+  if (!productId) {
+    alert('Không xác định được product_id.');
     return;
   }
 
-  if(existing && existing.length > 0){
-    // update quantity
-    const item = existing[0];
-    const { error: updErr } = await supabase
-      .from('cart_items')
-      .update({ quantity: item.quantity + 1 })
-      .eq('id', item.id);
+  try {
+    // BƯỚC 1: Lấy seller_id từ bảng products
+    const { data: productData, error: productError } = await supabase
+      .from('products')
+      .select('seller_id')
+      .eq('id', productId)
+      .single();
 
-    if(updErr){
-      console.error('Lỗi cập nhật số lượng', updErr);
-      alert('Lỗi khi cập nhật giỏ hàng.');
-    } else {
-      // có thể thay bằng toast nhẹ
-      alert('Đã tăng số lượng trong giỏ.');
-      // optional: window.location.href = '../src/cart.html';
+    if (productError || !productData?.seller_id) {
+      console.error('Lỗi lấy seller_id:', productError);
+      alert('Không tìm thấy người bán của sản phẩm này!');
+      return;
     }
-  } else {
-    // insert mới
-    const { error: insErr } = await supabase
-      .from('cart_items')
-      .insert([{ user_id: userId, product_id: productId, quantity: 1 }]);
 
-    if(insErr){
-      console.error('Lỗi insert cart_items', insErr);
-      // Nếu lỗi unique (race condition), có thể thử update thay thế — đơn giản: báo lỗi
-      alert('Thêm vào giỏ thất bại: ' + (insErr.message || insErr.details || ''));
-    } else {
-      alert('Đã thêm vào giỏ!');
-      // optional: window.location.href = '../src/cart.html';
+    const sellerId = productData.seller_id; // ĐÚNG: dùng let/const, có scope rõ ràng
+
+    // BƯỚC 2: Kiểm tra sản phẩm đã có trong giỏ chưa
+    const { data: existing, error: checkError } = await supabase
+      .from('cart_items')
+      .select('id, quantity')
+      .eq('user_id', userId)
+      .eq('product_id', productId)
+      .maybeSingle();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Lỗi kiểm tra giỏ hàng:', checkError);
+      alert('Lỗi hệ thống khi kiểm tra giỏ hàng');
+      return;
     }
+
+    if (existing) {
+      // Đã có → tăng số lượng
+      const { error: updateError } = await supabase
+        .from('cart_items')
+        .update({ quantity: existing.quantity + 1 })
+        .eq('id', existing.id);
+
+      if (updateError) {
+        alert('Cập nhật giỏ hàng thất bại!');
+        console.error(updateError);
+      } else {
+        alert('Đã tăng số lượng sản phẩm trong giỏ!');
+      }
+    } else {
+      // Chưa có → thêm mới + có seller_id
+      const { error: insertError } = await supabase
+        .from('cart_items')
+        .insert({
+          user_id: userId,
+          product_id: productId,
+          quantity: 1,
+          seller_id: sellerId   // ĐẢM BẢO 100% có giá trị UUID ở đây
+        });
+
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        alert('Thêm vào giỏ thất bại: ' + insertError.message);
+      } else {
+        alert('Đã thêm sản phẩm vào giỏ hàng thành công!');
+      }
+    }
+  } catch (err) {
+    console.error('Lỗi không xác định:', err);
+    alert('Có lỗi xảy ra, vui lòng thử lại!');
   }
 }
 
 // chờ DOM sẵn sàng trước khi gắn sự kiện
 document.addEventListener('DOMContentLoaded', () => {
   // gắn cho các nút hiện có
-  document.querySelectorAll('button.fancy, button[id^="buyBtn"], .button').forEach(btn=>{
+  document.querySelectorAll('button.fancy, button[id^="buyBtn2"], .button').forEach(btn=>{
     btn.addEventListener('click', async (e)=>{
-      // nếu nút chứa data-product-id tự thân (hiếm), ưu tiên đó
       const fromBtnPid = btn.dataset?.productId ? Number(btn.dataset.productId) : null;
       const pid = fromBtnPid || getProductIdFromCard(btn);
       await addToCart(pid);
     });
   });
+});
 
-  // nếu bạn có nút giỏ hàng (link), giữ nguyên href
-  const cartLink = document.querySelector('a[href*="cart.html"], a[href*="cart"]');
-  if(cartLink){
-    // nothing
-  }
+
+async function loadSellerInfo(productId) {
+    try {
+        // 1. Lấy thông tin sản phẩm để có seller_id
+        const { data: product, error: productError } = await supabase
+            .from('products')
+            .select('seller_id')
+            .eq('id', productId)
+            .single();
+
+        if (productError) {
+            console.error('Lỗi khi lấy thông tin sản phẩm:', productError);
+            document.getElementById('sellerLoading').textContent = 'Không thể tải thông tin người bán';
+            return;
+        }
+
+        if (!product || !product.seller_id) {
+            document.getElementById('sellerLoading').textContent = 'Không tìm thấy thông tin người bán';
+            return;
+        }
+
+        // 2. Lấy thông tin người bán từ bảng users hoặc auth.users
+        // Chú ý: Nếu bạn dùng bảng riêng cho sellers, thay 'auth.users' bằng tên bảng đó
+        const { data: seller, error: sellerError } = await supabase
+            .from('profiles') // hoặc tên bảng sellers của bạn
+            .select('*')
+            .eq('id', product.seller_id)
+            .single();
+
+        if (sellerError) {
+            console.error('Lỗi khi lấy thông tin người bán:', sellerError);
+            
+            // Nếu không có bảng users, thử lấy từ auth metadata
+            const { data: authData } = await supabase.auth.admin.getUserById(product.seller_id);
+            if (authData && authData.user) {
+                displaySellerInfo({
+                    id: authData.user.id,
+                    email: authData.user.email,
+                    name: authData.user.user_metadata?.full_name || authData.user.email,
+                    created_at: authData.user.created_at
+                });
+            } else {
+                document.getElementById('sellerLoading').textContent = 'Không thể tải thông tin người bán';
+            }
+            return;
+        }
+
+        // 3. Hiển thị thông tin người bán
+        displaySellerInfo(seller);
+
+    } catch (error) {
+        console.error('Lỗi:', error);
+        document.getElementById('sellerLoading').textContent = 'Đã xảy ra lỗi khi tải thông tin';
+    }
+}
+
+// Hàm hiển thị thông tin người bán
+function displaySellerInfo(seller) {
+    document.getElementById('sellerLoading').style.display = 'none';
+    document.getElementById('sellerInfo').style.display = 'flex';
+    
+    // Cập nhật thông tin vào HTML
+    document.getElementById('sellerName').textContent = seller.full_name || seller.email || 'Không có tên';
+    document.getElementById('sellerEmail').textContent = seller.email || 'Không có email';
+    document.getElementById('sellerId').textContent = seller.id;
+    
+    // Format ngày tham gia
+    if (seller.created_at) {
+        const date = new Date(seller.created_at);
+        document.getElementById('sellerJoined').textContent = date.toLocaleDateString('vi-VN');
+    } else {
+        document.getElementById('sellerJoined').textContent = 'Không rõ';
+    }
+}
+
+// Hàm xem shop của người bán (có thể customize sau)
+function viewSellerShop() {
+    const sellerId = document.getElementById('sellerId').textContent;
+    alert('Chức năng xem shop đang được phát triển.\nSeller ID: ' + sellerId);
+    // window.location.href = '/seller-shop.html?id=' + sellerId;
+}
+
+// Gọi hàm load thông tin người bán khi trang load
+document.addEventListener('DOMContentLoaded', () => {
+    // Lấy product ID từ button hoặc từ URL
+    const productId = 101; // Hoặc lấy từ URL: new URLSearchParams(window.location.search).get('id')
+    
+    loadSellerInfo(productId);
 });
 </script>

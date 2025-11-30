@@ -5,518 +5,317 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Giỏ Hàng</title>
 <style>
-  body {
-    font-family: sans-serif;
-    margin: 0;
-    background: #f6f6f6;
-  }
+  body { font-family: Arial, sans-serif; margin: 0; background: #f6f6f6; }
   header {
-    background: #fff;
-    padding: 10px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #ddd;
+    background: #fff; padding: 10px 20px; display: flex; align-items: center;
+    justify-content: space-between; border-bottom: 1px solid #ddd;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
   }
-  h1 {
-    font-size: 24px;
-    margin: 20px;
+  h1 { font-size: 24px; margin: 20px 20px 10px; padding-top: 60px; }
+  .cart-container { max-width: 1200px; margin: auto; padding: 20px; padding-bottom: 120px; }
+  .seller-group { background: #fff; border-radius: 12px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .seller-header {
+    display: flex; align-items: center; gap: 12px; padding: 15px;
+    background: #fafafa; border-bottom: 1px solid #eee; font-weight: bold;
   }
-
-  .bubbles {
-  --c1: #212121; /* Recommendation: same background color */
-  --c2: #af8d11;
-  --size-letter: 32px;
-  padding: 0.5em 1em;
-  font-size: var(--size-letter);
-
-  background-color: transparent;
-  border: calc(var(--size-letter) / 6) solid var(--c2);
-  border-radius: 0.2em;
-  cursor: pointer;
-
-  overflow: hidden;
-  position: relative;
-  transition: 300ms cubic-bezier(0.83, 0, 0.17, 1);
-}
-
-.bubbles > .text {
-  font-weight: 700;
-  color: var(--c2);
-  position: relative;
-  z-index: 1;
-  transition: color 700ms cubic-bezier(0.83, 0, 0.17, 1);
-}
-
-.bubbles::before {
-  top: 0;
-  left: 0;
-}
-
-.bubbles::after {
-  top: 100%;
-  left: 100%;
-}
-
-.bubbles::before,
-.bubbles::after {
-  content: "";
-  width: 150%;
-  aspect-ratio: 1/1;
-  scale: 0;
-  transition: 1000ms cubic-bezier(0.76, 0, 0.24, 1);
-
-  background-color: var(--c2);
-  border-radius: 50%;
-
-  position: absolute;
-  translate: -50% -50%;
-}
-
-.bubbles:hover {
-  & > span {
-    color: var(--c1);
-  }
-  &::before,
-  &::after {
-    scale: 1;
-  }
-}
-
-.bubbles:active {
-  scale: 0.98;
-  filter: brightness(0.9);
-}
-  .cart-container {
-    max-width: 1200px;
-    margin: auto;
-    padding: 20px;
-  }
+  .seller-header img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
   .cart-item {
-    display: flex;
-    align-items: center;
-    background: #fff;
-    margin-bottom: 15px;
-    padding: 15px;
-    border-radius: 8px;
-    gap: 15px;
-    box-shadow: 0px 3px 8px rgba(0,0,0,0.05);
+    display: flex; align-items: center; padding: 15px; gap: 15px;
+    border-bottom: 1px solid #f0f0f0; position: relative;
   }
-  .cart-item img {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 5px;
-  }
-  .cart-item h2 {
-    font-size: 16px;
-    margin: 0 0 5px 0;
-  }
-  .cart-item p {
-    margin: 0;
-    font-size: 14px;
-  }
-  .cart-item .price {
-    font-weight: bold;
-    color: #ff5a1f;
-  }
-  .cart-item .actions {
-    margin-left: auto;
-    display:flex;
-    gap:8px;
-    align-items:center;
-  }
-  .cart-item .actions button {
-    padding: 6px 10px;
-    border: none;
-    background: #e81cff;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
-  }
+  .cart-item:last-child { border-bottom: none; }
+  .cart-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; }
+  .cart-item h2 { font-size: 16px; margin: 0 0 8px 0; line-height: 1.4; }
+  .price { color: #d4a017; font-weight: bold; }
   .qty-box {
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:6px 8px;
-    border-radius:6px;
-    background:#f3f4f6;
-    color:#111827;
-    font-weight:600;
+    display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px;
+    background:#f3f4f6; border-radius:6px; font-weight:600;
   }
   .qty-box button {
-    background:transparent;
-    color:#111827;
-    border:1px solid #e5e7eb;
-    border-radius:4px;
-    padding:4px 8px;
-    cursor:pointer;
+    background:transparent; border:1px solid #ccc; width:28px; height:28px;
+    border-radius:4px; cursor:pointer; font-size:16px;
   }
-  .total {
-    text-align: right;
-    font-size: 18px;
-    font-weight: bold;
-    margin-top: 20px;
+  .actions button.remove {
+    background:#ff4444; color:white; border:none; padding:8px 12px;
+    border-radius:6px; cursor:pointer;
   }
-
-  .codepen-button {
-  font-family: monospace;
-  font-weight: bolder;
-  display: block;
-  cursor: pointer;
-  color: #000;
-  margin: 0 auto;
-  position: relative;
-  text-decoration: none;
-  font-weight: 600;
-  border-radius: 6px;
-  overflow: hidden;
-  padding: 3px;
-  width: 160px;
-  isolation: isolate;
-  transform: scale(0.85);
-}
-
-.codepen-button::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 420%;
-  height: 120%;
-  background: linear-gradient(
-    115deg,
-    #628fbc,
-    hsl(0, 93%, 73%),
-    #f032a7,
-    #329af0,
-    #f032a7
-  );
-  background-size: 25% 100%;
-  animation: border-animation 0.75s linear infinite;
-  animation-play-state: paused;
-  translate: -5% 0%;
-  transition: translate 0.25s ease-out;
-}
-
-.codepen-button:hover::before {
-  animation-play-state: running;
-  transition-duration: 0.75s;
-  translate: 0% 0%;
-}
-
-@keyframes border-animation {
-  to {
-    transform: translateX(-25%);
+  .checkout-bar {
+    position:fixed; bottom:0; left:0; right:0; background:#fff;
+    padding:15px 20px; box-shadow:0 -4px 20px rgba(0,0,0,0.1);
+    display:flex; align-items:center; gap:15px; z-index:999;
+    font-size:18px; font-weight:bold;
   }
-}
-
-.codepen-button span {
-  position: relative;
-  display: block;
-  padding: 1rem 1.5rem;
-  font-size: 1.1rem;
-  background: #fff;
-  border-radius: 3px;
-  height: 100%;
-}
-
-.codepen-button .span {
-  display: flex;
-  flex-direction: row;
-  justify-content: start;
-  align-items: center;
-  gap: 10px;
-}
-
-.codepen-button .p {
-  margin: 0;
-}
+  .bubbles {
+    --c1: #212121; --c2: #d4a017; --size-letter: 28px;
+    padding: 0.6em 1.6em; font-size: var(--size-letter);
+    background:transparent; border: calc(var(--size-letter)/6) solid var(--c2);
+    border-radius:0.3em; cursor:pointer; overflow:hidden; position:relative;
+    transition:300ms;
+  }
+  .bubbles > .text { font-weight:700; color:var(--c2); position:relative; z-index:1; }
+  .bubbles::before, .bubbles::after {
+    content:""; width:150%; aspect-ratio:1/1; scale:0; transition:800ms;
+    background:var(--c2); border-radius:50%; position:absolute; translate:-50% -50%;
+  }
+  .bubbles::before { top:0; left:0; }
+  .bubbles::after { top:100%; left:100%; }
+  .bubbles:hover > .text { color:white; }
+  .bubbles:hover::before, .bubbles:hover::after { scale:1; }
+  .bubbles:active { scale:0.95; }
 </style>
+</head>
+<body>
 
-<!-- dùng ESM supabase client -->
+<header>
+  <a href="../src/main.html">
+    <img src="../data/img/logo.png" alt="Logo" height="40" />
+  </a>
+</header>
+
+<h1>Giỏ Hàng Của Bạn</h1>
+<div class="cart-container"></div>
+
+<!-- Thanh toán + Nút Xem đơn hàng -->
+<div class="checkout-bar">
+  <label style="display:flex;align-items:center;gap:8px;">
+    <input type="checkbox" id="selectAll" checked> Chọn tất cả
+  </label>
+  <div style="flex-grow:1;text-align:right;color:#d4a017;" id="selectedTotal">0₫</div>
+  
+  <button class="bubbles" onclick="checkoutSelected()" style="margin-right:10px;">
+    <span class="text">Thanh toán</span>
+  </button>
+
+  <button class="bubbles" onclick="location.href='../src/orderlist.html'" style="background:#28a745;border-color:#28a745;">
+    <span class="text" style="color:white;">Xem đơn hàng</span>
+  </button>
+</div>
+
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
 const SUPABASE_URL = 'https://cfzctoqsrkprcjstoqmp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmemN0b3FzcmtwcmNqc3RvcW1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NDk5NjMsImV4cCI6MjA3ODMyNTk2M30.6p6c5JCwYimAp5kOQYvJ94jdciyhGNjB08c4uFI9eLc';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// lấy user id hiện tại từ session
-async function getUserId(){
-    const r = await supabase.auth.getSession();
-    return r?.data?.session?.user?.id ?? null;
+const DEFAULT_SHOP_AVATAR = 'https://cfzctoqsrkprcjstoqmp.supabase.co/storage/v1/object/public/Shio/shop.png';
+
+async function getUserId() {
+  const { data } = await supabase.auth.getSession();
+  return data?.session?.user?.id || null;
 }
 
-// load giỏ hàng (giữ nguyên, nhưng render nút + / -)
 async function loadCart() {
-    const userId = await getUserId();
-    if(!userId){
-        document.querySelector('.cart-container').innerHTML = '<p>Bạn chưa đăng nhập.</p>';
-        return;
-    }
+  const userId = await getUserId();
+  if (!userId) {
+    document.querySelector('.cart-container').innerHTML = '<p style="text-align:center;padding:80px;color:#999;font-size:18px;">Vui lòng đăng nhập</p>';
+    return;
+  }
 
-    const { data, error } = await supabase
-        .from('cart_items')
-        .select(`id, quantity, product:product_id(id, name, price, image_url)`)
-        .eq('user_id', userId);
+  const { data: items, error } = await supabase
+    .from('cart_items')
+    .select('id, quantity, seller_id, product:product_id(id, name, price, image_url)')
+    .eq('user_id', userId);
 
-    if(error){
-        console.error(error);
-        document.querySelector('.cart-container').innerHTML = '<p>Lỗi khi tải giỏ hàng.</p>';
-        return;
-    }
+  if (error || !items || items.length === 0) {
+    document.querySelector('.cart-container').innerHTML = '<p style="text-align:center;padding:80px;color:#999;font-size:18px;">Giỏ hàng trống</p>';
+    return;
+  }
 
-    const container = document.querySelector('.cart-container');
-    container.innerHTML = '';
-
-    let total = 0;
-    (data || []).forEach(item => {
-        const price = parseFloat(item.product?.price || 0);
-        const quantity = Number(item.quantity || 0);
-        total += price * quantity;
-
-        const img = item.product?.image_url || 'https://via.placeholder.com/80';
-        const name = item.product?.name || 'Sản phẩm';
-
-        const div = document.createElement('div');
-        div.className = 'cart-item';
-        div.innerHTML = `
-            <img src="${img}" alt="${name}" />
-            <div style="min-width:220px">
-                <h2>${name}</h2>
-                <p class="price">${price.toLocaleString('vi-VN', {style:'currency', currency:'VND'})}</p>
-            </div>
-
-            <div class="qty-box" data-item-id="${item.id}">
-                <button class="decrease" aria-label="Giảm">−</button>
-                <div class="qty-value">${quantity}</div>
-                <button class="increase" aria-label="Tăng">+</button>
-            </div>
-
-            <div style="min-width:120px;text-align:right">
-              <div class="muted small">Thành tiền</div>
-              <div class="price total-line"> ${ (price * quantity).toLocaleString('vi-VN', {style:'currency', currency:'VND'}) }</div>
-            </div>
-
-            <div class="actions">
-              <button class="remove" data-id="${item.id}">Xóa</button>
-            </div>
-        `;
-        container.appendChild(div);
+  // Lấy tên shop
+  const sellerIds = [...new Set(items.map(i => i.seller_id).filter(Boolean))];
+  let sellerMap = {};
+  if (sellerIds.length > 0) {
+    const { data: sellers } = await supabase
+      .from('profiles')
+      .select('id, full_name')
+      .in('id', sellerIds);
+    sellers?.forEach(s => {
+      sellerMap[s.id] = { full_name: s.full_name || 'Cửa hàng', avatar_url: DEFAULT_SHOP_AVATAR };
     });
+  }
 
-    const totalDiv = document.createElement('div');
-    totalDiv.className = 'total';
-    totalDiv.textContent = 'Tổng: ' + total.toLocaleString('vi-VN', {style:'currency', currency:'VND'});
-    container.appendChild(totalDiv);
+  // Nhóm theo seller
+  const groups = {};
+  items.forEach(item => {
+    const sid = item.seller_id || 'unknown';
+    if (!groups[sid]) groups[sid] = [];
+    groups[sid].push(item);
+  });
 
-    // Gắn sự kiện xóa
-    container.querySelectorAll('button.remove').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const id = btn.dataset.id;
-            const { error } = await supabase.from('cart_items').delete().eq('id', id);
-            if(error){
-                console.error(error);
-                alert('Xóa thất bại!');
-            } else {
-                await loadCart();
-            }
-        });
-    });
+  const container = document.querySelector('.cart-container');
+  container.innerHTML = '';
 
-    // Gắn sự kiện tăng/giảm
-    container.querySelectorAll('.qty-box').forEach(box => {
-        const itemId = box.dataset.itemId;
-        const incBtn = box.querySelector('button.increase');
-        const decBtn = box.querySelector('button.decrease');
-        const qtyValueEl = box.querySelector('.qty-value');
+  Object.entries(groups).forEach(([sellerId, groupItems]) => {
+    const seller = sellerMap[sellerId] || { full_name: 'Cửa hàng', avatar_url: DEFAULT_SHOP_AVATAR };
 
-        incBtn.addEventListener('click', async () => {
-            await changeQuantity(itemId, +1);
-        });
-        decBtn.addEventListener('click', async () => {
-            await changeQuantity(itemId, -1);
-        });
-    });
+    const groupDiv = document.createElement('div');
+    groupDiv.className = 'seller-group';
+    groupDiv.innerHTML = `
+      <div class="seller-header">
+        <input type="checkbox" class="select-seller" data-seller-id="${sellerId}" checked>
+        <img src="${seller.avatar_url}" alt="Shop">
+        <strong>${seller.full_name}</strong>
+      </div>
+      <div class="items-list">
+        ${groupItems.map(item => {
+          const p = item.product;
+          const price = parseFloat(p?.price || 0);
+          const subtotal = price * item.quantity;
+          return `
+            <div class="cart-item">
+              <input type="checkbox" class="item-check" data-item-id="${item.id}" data-seller-id="${sellerId}" checked>
+              <img src="${p?.image_url || 'https://via.placeholder.com/80'}" alt="${p?.name}">
+              <div style="flex:1">
+                <h2>${p?.name || 'Sản phẩm'}</h2>
+                <p class="price">${price.toLocaleString('vi-VN')}₫</p>
+              </div>
+              <div class="qty-box" data-item-id="${item.id}">
+                <button class="decrease">−</button>
+                <div class="qty-value">${item.quantity}</div>
+                <button class="increase">+</button>
+              </div>
+              <div style="text-align:right;min-width:120px">
+                <div class="price">${subtotal.toLocaleString('vi-VN')}₫</div>
+              </div>
+              <div class="actions">
+                <button class="remove" data-id="${item.id}">Xóa</button>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+    `;
+    container.appendChild(groupDiv);
+  });
+
+  attachEvents();
+  updateTotalSelected();
 }
 
-// thay đổi số lượng (delta: +1 hoặc -1). Nếu mớiQty <=0 thì xóa item.
-async function changeQuantity(cartItemId, delta){
-    try{
-        // lấy item để biết quantity hiện tại
-        const { data, error } = await supabase.from('cart_items').select('id, quantity').eq('id', cartItemId).limit(1);
-        if(error || !data || data.length === 0){
-            console.error('Không tìm thấy cart item', error);
-            alert('Lỗi khi cập nhật số lượng.');
-            return;
-        }
-        const item = data[0];
-        const newQty = Number(item.quantity) + Number(delta);
-        if(newQty <= 0){
-            // xóa item
-            const { error: delErr } = await supabase.from('cart_items').delete().eq('id', cartItemId);
-            if(delErr){
-                console.error('Lỗi xóa item', delErr);
-                alert('Lỗi khi xóa item.');
-            } else {
-                await loadCart();
-            }
-            return;
-        }
+// === CÁC HÀM HỖ TRỢ ===
+function attachEvents() {
+  document.getElementById('selectAll').onchange = function() {
+    document.querySelectorAll('.item-check, .select-seller').forEach(cb => cb.checked = this.checked);
+    updateTotalSelected();
+  };
 
-        const { error: updErr } = await supabase.from('cart_items').update({ quantity: newQty }).eq('id', cartItemId);
-        if(updErr){
-            console.error('Lỗi update quantity', updErr);
-            alert('Lỗi khi cập nhật số lượng.');
-            return;
-        }
+  document.querySelectorAll('.select-seller').forEach(cb => {
+    cb.onchange = function() {
+      const sid = this.dataset.sellerId;
+      document.querySelectorAll(`.item-check[data-seller-id="${sid}"]`).forEach(ic => ic.checked = this.checked);
+      updateTotalSelected();
+      syncSelectAll();
+    };
+  });
 
-        // cập nhật UI nhanh (tối ưu: reload lại toàn bộ giỏ để cập nhật tổng)
-        await loadCart();
+  document.querySelectorAll('.item-check').forEach(cb => {
+    cb.onchange = () => { updateTotalSelected(); syncSelectAll(); };
+  });
 
-    }catch(e){
-        console.error(e);
-        alert('Có lỗi xảy ra.');
-    }
+  document.querySelectorAll('.qty-box').forEach(box => {
+    const id = box.dataset.itemId;
+    box.querySelector('.increase').onclick = () => changeQuantity(id, 1);
+    box.querySelector('.decrease').onclick = () => changeQuantity(id, -1);
+  });
+
+  document.querySelectorAll('button.remove').forEach(btn => {
+    btn.onclick = async () => {
+      if (confirm('Xóa sản phẩm này?')) {
+        await supabase.from('cart_items').delete().eq('id', btn.dataset.id);
+        loadCart();
+      }
+    };
+  });
 }
 
-// === Hàm checkout: tạo order, order_items, xóa cart_items ===
-async function checkout(){
-    const userId = await getUserId();
-    if(!userId){
-        alert('Bạn chưa đăng nhập.');
-        return;
-    }
-
-    // Lấy cart items cùng thông tin giá tại thời điểm hiện tại
-    const { data: cartItems, error: cartErr } = await supabase
-        .from('cart_items')
-        .select('id, product_id, quantity, product:product_id(price)')
-        .eq('user_id', userId);
-
-    if(cartErr){
-        console.error(cartErr);
-        alert('Lỗi khi lấy giỏ hàng.');
-        return;
-    }
-    if(!cartItems || cartItems.length === 0){
-        alert('Giỏ hàng trống.');
-        return;
-    }
-
-    // Lấy giá chính xác từ products (để chắc chắn)
-    const productIds = cartItems.map(i => i.product_id);
-    const { data: products, error: prodErr } = await supabase
-        .from('products')
-        .select('id, price')
-        .in('id', productIds);
-
-    if(prodErr){
-        console.error(prodErr);
-        alert('Lỗi khi lấy giá sản phẩm.');
-        return;
-    }
-    const priceMap = {};
-    (products || []).forEach(p => priceMap[p.id] = parseFloat(p.price || 0));
-
-    // tính tổng và chuẩn bị payload order_items
-    let total = 0;
-    const orderItemsPayload = cartItems.map(ci => {
-        const price = priceMap[ci.product_id] ?? parseFloat(ci.product?.price || 0);
-        total += price * ci.quantity;
-        return {
-            product_id: ci.product_id,
-            quantity: ci.quantity,
-            price: price
-        };
-    });
-
-    try {
-        // tạo order
-        const { data: orderData, error: orderErr } = await supabase
-            .from('orders')
-            .insert({ user_id: userId, total_amount: total, status: 'pending' })
-            .select()
-            .limit(1);
-
-        if(orderErr || !orderData || orderData.length === 0){
-            console.error(orderErr);
-            alert('Lỗi khi tạo đơn hàng.');
-            return;
-        }
-
-        const orderId = orderData[0].id;
-
-        // thêm order_items (gắn order_id)
-        const payload = orderItemsPayload.map(it => ({ ...it, order_id: orderId }));
-        const { error: itemsErr } = await supabase.from('order_items').insert(payload);
-
-        if(itemsErr){
-            console.error(itemsErr);
-            // rollback: xóa order đã tạo
-            await supabase.from('orders').delete().eq('id', orderId);
-            alert('Lỗi khi tạo chi tiết đơn hàng. Đã hủy thao tác.');
-            return;
-        }
-
-        // xóa cart_items của user
-        const { error: delErr } = await supabase.from('cart_items').delete().eq('user_id', userId);
-        if(delErr){
-            console.error(delErr);
-            alert('Order đã tạo nhưng không thể xóa giỏ (hãy kiểm tra thủ công).');
-        } else {
-            alert('Tạo đơn thành công! Mã đơn: ' + orderId);
-        }
-
-        // chuyển sang trang order (bạn có thể sửa đường dẫn)
-        window.location.href = '../src/order.html?orderId=' + orderId;
-
-    } catch (e) {
-        console.error(e);
-        alert('Có lỗi xảy ra, thử lại sau.');
-    }
+function syncSelectAll() {
+  const allChecked = [...document.querySelectorAll('.item-check')].every(cb => cb.checked);
+  document.getElementById('selectAll').checked = allChecked;
 }
 
-// gắn load khi DOM sẵn sàng
+async function updateTotalSelected() {
+  let total = 0;
+  document.querySelectorAll('.item-check:checked').forEach(cb => {
+    const item = cb.closest('.cart-item');
+    const txt = item.querySelector('.price:last-of-type')?.textContent || '0';
+    total += parseFloat(txt.replace(/[^0-9]/g, '') || 0);
+  });
+  document.getElementById('selectedTotal').textContent = total.toLocaleString('vi-VN') + '₫';
+}
+
+async function changeQuantity(id, delta) {
+  const { data } = await supabase.from('cart_items').select('quantity').eq('id', id).single();
+  const newQty = (data?.quantity || 0) + delta;
+  if (newQty <= 0) {
+    if (confirm('Xóa sản phẩm?')) await supabase.from('cart_items').delete().eq('id', id);
+  } else {
+    await supabase.from('cart_items').update({ quantity: newQty }).eq('id', id);
+  }
+  loadCart();
+}
+
+// === THANH TOÁN + CHUYỂN LUÔN VÀO ĐƠN HÀNG ===
+async function checkoutSelected() {
+  const checked = [...document.querySelectorAll('.item-check:checked')];
+  if (checked.length === 0) return alert('Vui lòng chọn ít nhất 1 sản phẩm!');
+
+  const itemIds = checked.map(cb => cb.dataset.itemId);
+  const { data: items } = await supabase
+    .from('cart_items')
+    .select('id, product_id, quantity, seller_id, product:product_id(price)')
+    .in('id', itemIds);
+
+  const bySeller = {};
+  items.forEach(i => {
+    const sid = i.seller_id;
+    if (!bySeller[sid]) bySeller[sid] = [];
+    bySeller[sid].push(i);
+  });
+
+  const createdOrderIds = []; // Lưu các order_id để chuyển trang
+
+  try {
+    for (const [sellerId, group] of Object.entries(bySeller)) {
+      let total = 0;
+      const orderItems = group.map(i => {
+        const price = parseFloat(i.product.price || 0);
+        total += price * i.quantity;
+        return { product_id: i.product_id, quantity: i.quantity, price };
+      });
+
+      const { data: order } = await supabase
+        .from('orders')
+        .insert({ 
+          buyer_id: await getUserId(), 
+          seller_id: sellerId, 
+          total_amount: total, 
+          status: 'pending' 
+        })
+        .select('id')
+        .single();
+
+      await supabase.from('order_items').insert(orderItems.map(it => ({ ...it, order_id: order.id })));
+      await supabase.from('cart_items').delete().in('id', group.map(g => g.id));
+
+      createdOrderIds.push(order.id);
+    }
+
+    // Thành công → chuyển luôn sang trang đơn hàng
+    if (createdOrderIds.length === 1) {
+      // Chỉ 1 đơn → vào chi tiết đơn
+      window.location.href = `../src/order.html?orderId=${createdOrderIds[0]}`;
+    } else {
+      // Nhiều đơn → vào danh sách đơn
+      window.location.href = '../src/orderlist.html';
+    }
+
+  } catch (e) {
+    console.error(e);
+    alert('Lỗi thanh toán: ' + (e.message || 'Vui lòng thử lại'));
+  }
+}
+
 document.addEventListener('DOMContentLoaded', loadCart);
-
-// bạn có thể expose checkout để gọi từ onclick attr
-window.checkout = checkout;
+window.checkoutSelected = checkoutSelected;
 </script>
-</head>
-<body>
-<header>
-    <a class="logo" href="../src/main.html">
-      <img src="../data/img/logo.png" alt="Logo" height="40" />
-    </a>
-</header>
-<h1>Giỏ Hàng Của Bạn</h1>
-<div class="cart-container">
-</div>
-
-<!-- nút gọi checkout thay vì chuyển trang trực tiếp -->
-<button class="bubbles" style="display: flex; align-items: center;justify-content: center;margin-left: 200px;margin-top:100px" onclick="checkout()">
-    <span class="text">Đặt hàng</span>
-</button>
-
-<a class="codepen-button" style="margin-left:200px;margin-top:50px" href="../src/orderlist.html">
-            <span class="span">
-                <p class="p">Đơn hàng</p>
-            <svg
-            xmlns="http://www.w3.org/2000/svg"
-            height="1em"
-            viewBox="0 0 576 512"
-            fill="#000"
-            class="cart"
-            >
-            <path
-                d="M0 24C0 10.7 10.7 0 24 0H69.5c22 0 41.5 12.8 50.6 32h411c26.3 0 45.5 25 38.6 50.4l-41 152.3c-8.5 31.4-37 53.3-69.5 53.3H170.7l5.4 28.5c2.2 11.3 12.1 19.5 23.6 19.5H488c13.3 0 24 10.7 24 24s-10.7 24-24 24H199.7c-34.6 0-64.3-24.6-70.7-58.5L77.4 54.5c-.7-3.8-4-6.5-7.9-6.5H24C10.7 48 0 37.3 0 24zM128 464a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm336-48a48 48 0 1 1 0 96 48 48 0 1 1 0-96z"
-            ></path></svg></span
-        ></a>
-
-<button class="bubbles" style="display: flex; align-items: center;justify-content: center; margin-left: 600px;margin-top:100px" onclick="location.href='../src/main.html'">
-    <span class="text">Quay lại trang mua</span>
-</button>
 </body>
 </html>

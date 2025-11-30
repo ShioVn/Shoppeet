@@ -308,7 +308,7 @@
     <div class="logo">
       <a href="../index.html"><img src="../data/img/logo.png" alt="Logo" height="40" /> </a>
 
-        <a class="codepen-button" style="margin-left:1050px" href="../src/cart.html">
+        <a class="codepen-button" style="margin-left:850px" href="../src/cart.html">
             <span class="span">
                 <p class="p">Giỏ Hàng</p>
             <svg
@@ -326,6 +326,13 @@
         <a class="codepen-button" style="margin-left:0px;width: 130px;" href="../src/profile.html">
             <span class="span">
                 <p class="p">Profile</p>
+            <svg
+            height="1em">
+            </svg></span
+        ></a>
+        <a class="codepen-button" style="margin-left:0px;width: 130px;" href="../src/list-product.html">
+            <span class="span">
+                <p class="p">Manage</p>
             <svg
             height="1em">
             </svg></span
@@ -550,16 +557,6 @@ const supabase = createClient(
 )
 
 // Kiểm tra role – giữ nguyên 100%
-
-async function checkRoleAndRedirect() {
-  try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return location.href = './sign-in.html'
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (profile?.role === 'seller') location.href = './main-seller.html'
-  } catch (error) { console.error('Error:', error) }
-}
-checkRoleAndRedirect()
 
 
 // Load sản phẩm động – sinh HTML giống hệt phần mặc định

@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Sản Phẩm & Đơn Hàng - Seller</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+  <div id="app">
+    <!-- Loading -->
+    <div class="flex items-center justify-center min-h-screen">
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <p class="mt-4 text-gray-600">Đang tải...</p>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .codepen-button {
+  font-family: monospace;
+  font-weight: bolder;
+  display: block;
+  cursor: pointer;
+  color: #000;
+  margin: 0 auto;
+  position: relative;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 6px;
+  overflow: hidden;
+  padding: 3px;
+  width: 160px;
+  isolation: isolate;
+  transform: scale(0.85);
+}
+
+.codepen-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 420%;
+  height: 120%;
+  background: linear-gradient(
+    115deg,
+    #628fbc,
+    hsl(0, 93%, 73%),
+    #f032a7,
+    #329af0,
+    #f032a7
+  );
+  background-size: 25% 100%;
+  animation: border-animation 0.75s linear infinite;
+  animation-play-state: paused;
+  translate: -5% 0%;
+  transition: translate 0.25s ease-out;
+}
+
+.codepen-button:hover::before {
+  animation-play-state: running;
+  transition-duration: 0.75s;
+  translate: 0% 0%;
+}
+
+@keyframes border-animation {
+  to {
+    transform: translateX(-25%);
+  }
+}
+
+.codepen-button span {
+  position: relative;
+  display: block;
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+  background: #fff;
+  border-radius: 3px;
+  height: 100%;
+}
+
+.codepen-button .span {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  gap: 10px;
+}
+
+.codepen-button .p {
+  margin: 0;
+}
+  </style>
+
+  <script>
+    // Cấu hình Supabase
+    const SUPABASE_URL = 'https://cfzctoqsrkprcjstoqmp.supabase.co'
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmemN0b3FzcmtwcmNqc3RvcW1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NDk5NjMsImV4cCI6MjA3ODMyNTk2M30.6p6c5JCwYimAp5kOQYvJ94jdciyhGNjB08c4uFI9eLc'
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let currentUser = null;
+    let products = [];
+    let orders = [];
+    let currentTab = 'products'; // 'products' or 'orders'
+
+    // Initialize
+    async function init() {
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError || !user) {
+          showError('Vui lòng đăng nhập để tiếp tục');
+          return;
+        }
+
+        currentUser = user;
+        await loadProducts();
+        await loadOrders();
+        renderApp();
+      } catch (error) {
+        console.error('Error:', error);
+        showError('Có lỗi xảy ra khi tải dữ liệu');
+      }
+    }
+
+    // Load products from database
+    async function loadProducts() {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('seller_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading products:', error);
+        return;
+      }
+
+      products = data || [];
+    }
+
+    // Load orders from database
+    async function loadOrders() {
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          order_items(
+            *,
+            products(name, image_url)
+          )
+        `)
+        .eq('seller_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading orders:', error);
+        return;
+      }
+
+      // Load buyer info separately for each order
+      if (data && data.length > 0) {
+        const ordersWithBuyer = await Promise.all(
+          data.map(async (order) => {
+            const { data: buyer } = await supabase
+              .from('profiles')
+              .select('full_name, email, phone, address')
+              .eq('id', order.buyer_id)
+              .single();
+            
+            return { ...order, buyer };
+          })
+        );
+        orders = ordersWithBuyer;
+      } else {
+        orders = [];
+      }
+    }
+
+    // Update order status
+    async function updateOrderStatus(orderId, newStatus) {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus })
+        .eq('id', orderId)
+        .eq('seller_id', currentUser.id);
+
+      if (error) {
+        console.error('Error updating order:', error);
+        alert('Không thể cập nhật trạng thái đơn hàng: ' + error.message);
+        return false;
+      }
+
+      await loadOrders();
+      renderApp();
+      return true;
+    }
+
+    // Add new product
+    async function addProduct(productData) {
+      const { data, error } = await supabase
+        .from('products')
+        .insert([{
+          ...productData,
+          seller_id: currentUser.id
+        }])
+        .select();
+
+      if (error) {
+        console.error('Error adding product:', error);
+        alert('Không thể thêm sản phẩm: ' + error.message);
+        return false;
+      }
+
+      await loadProducts();
+      renderApp();
+      return true;
+    }
+
+    // Update product
+    async function updateProduct(id, productData) {
+      const { error } = await supabase
+        .from('products')
+        .update(productData)
+        .eq('id', id)
+        .eq('seller_id', currentUser.id);
+
+      if (error) {
+        console.error('Error updating product:', error);
+        alert('Không thể cập nhật sản phẩm: ' + error.message);
+        return false;
+      }
+
+      await loadProducts();
+      renderApp();
+      return true;
+    }
+
+    // Delete product
+    async function deleteProduct(id) {
+      if (!confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) return;
+
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id)
+        .eq('seller_id', currentUser.id);
+
+      if (error) {
+        console.error('Error deleting product:', error);
+        alert('Không thể xóa sản phẩm: ' + error.message);
+        return;
+      }
+
+      await loadProducts();
+      renderApp();
+    }
+
+    // Format currency
+    function formatCurrency(amount) {
+      return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND'
+      }).format(amount);
+    }
+
+    // Get status badge color
+    function getStatusBadge(status) {
+      const badges = {
+        'pending': 'bg-yellow-100 text-yellow-800',
+        'confirmed': 'bg-blue-100 text-blue-800',
+        'shipping': 'bg-purple-100 text-purple-800',
+        'completed': 'bg-green-100 text-green-800',
+        'cancelled': 'bg-red-100 text-red-800'
+      };
+      return badges[status] || 'bg-gray-100 text-gray-800';
+    }
+
+    // Get status text
+    function getStatusText(status) {
+      const texts = {
+        'pending': 'Chờ xác nhận',
+        'confirmed': 'Đã xác nhận',
+        'shipping': 'Đang giao',
+        'completed': 'Hoàn thành',
+        'cancelled': 'Đã hủy'
+      };
+      return texts[status] || status;
+    }
+
+    // Switch tab
+    function switchTab(tab) {
+      currentTab = tab;
+      renderApp();
+    }
+
+    // Show error
+    function showError(message) {
+      document.getElementById('app').innerHTML = `
+        <div class="flex items-center justify-center min-h-screen">
+          <div class="text-center bg-white p-8 rounded-lg shadow-lg">
+            <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-gray-800 text-lg">${message}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Show product modal
+    function showProductModal(product = null) {
+      const isEdit = !!product;
+      const modalHTML = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" id="productModal">
+          <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+              <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">
+                  ${isEdit ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}
+                </h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+              
+              <form id="productForm" onsubmit="handleProductSubmit(event, ${isEdit ? product.id : 'null'})">
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tên sản phẩm *</label>
+                    <input type="text" name="name" required value="${product?.name || ''}"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+                    <textarea name="description" rows="3"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">${product?.description || ''}</textarea>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">Giá (VNĐ) *</label>
+                      <input type="number" name="price" required min="0" value="${product?.price || ''}"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-2">Số lượng *</label>
+                      <input type="number" name="stock" required min="0" value="${product?.stock || ''}"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">URL hình ảnh</label>
+                    <input type="url" name="image_url" value="${product?.image_url || ''}"
+                      placeholder="https://example.com/image.jpg"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  </div>
+
+                  <div class="flex gap-3 pt-4">
+                    <button type="submit"
+                      class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium">
+                      ${isEdit ? 'Cập nhật' : 'Thêm sản phẩm'}
+                    </button>
+                    <button type="button" onclick="closeModal()"
+                      class="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition font-medium">
+                      Hủy
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    // Show order detail modal
+    function showOrderDetailModal(order) {
+      const modalHTML = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" id="orderModal">
+          <div class="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+              <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">Chi tiết đơn hàng #${order.id}</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Order Info -->
+              <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <p class="text-sm text-gray-500">Trạng thái</p>
+                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full mt-1 ${getStatusBadge(order.status)}">
+                      ${getStatusText(order.status)}
+                    </span>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Ngày đặt</p>
+                    <p class="font-medium mt-1">${new Date(order.created_at).toLocaleString('vi-VN')}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Tổng tiền</p>
+                    <p class="font-bold text-lg text-blue-600 mt-1">${formatCurrency(order.total_amount)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Customer Info -->
+              <div class="mb-6">
+                <h4 class="font-semibold text-gray-900 mb-3">Thông tin khách hàng</h4>
+                <div class="bg-gray-50 rounded-lg p-4">
+                  <p class="mb-2"><span class="font-medium">Tên:</span> ${order.buyer?.full_name || 'N/A'}</p>
+                  <p class="mb-2"><span class="font-medium">Email:</span> ${order.buyer?.email || 'N/A'}</p>
+                  <p class="mb-2"><span class="font-medium">Số điện thoại:</span> ${order.buyer?.phone || 'N/A'}</p>
+                  <p><span class="font-medium">Địa chỉ:</span> ${order.buyer?.address || 'N/A'}</p>
+                </div>
+              </div>
+
+              <!-- Order Items -->
+              <div class="mb-6">
+                <h4 class="font-semibold text-gray-900 mb-3">Sản phẩm</h4>
+                <div class="space-y-3">
+                  ${order.order_items.map(item => `
+                    <div class="flex items-center bg-gray-50 rounded-lg p-3">
+                      ${item.products?.image_url ? `
+                        <img src="${item.products.image_url}" alt="${item.products?.name}" 
+                          class="w-16 h-16 rounded object-cover"
+                          onerror="this.src='https://via.placeholder.com/64?text=No+Image'">
+                      ` : `
+                        <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
+                          <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                          </svg>
+                        </div>
+                      `}
+                      <div class="ml-4 flex-1">
+                        <p class="font-medium text-gray-900">${item.products?.name || 'Sản phẩm không tồn tại'}</p>
+                        <p class="text-sm text-gray-500">Số lượng: ${item.quantity}</p>
+                      </div>
+                      <div class="text-right">
+                        <p class="font-semibold text-gray-900">${formatCurrency(item.price)}</p>
+                        <p class="text-sm text-gray-500">Tổng: ${formatCurrency(item.price * item.quantity)}</p>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Update Status -->
+              ${order.status !== 'completed' && order.status !== 'cancelled' ? `
+                <div class="mb-6">
+                  <h4 class="font-semibold text-gray-900 mb-3">Cập nhật trạng thái</h4>
+                  <div class="flex gap-2">
+                    ${order.status === 'pending' ? `
+                      <button onclick="updateOrderStatus(${order.id}, 'confirmed')" 
+                        class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                        Xác nhận đơn hàng
+                      </button>
+                      <button onclick="updateOrderStatus(${order.id}, 'cancelled')" 
+                        class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
+                        Hủy đơn
+                      </button>
+                    ` : ''}
+                    ${order.status === 'confirmed' ? `
+                      <button onclick="updateOrderStatus(${order.id}, 'shipping')" 
+                        class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
+                        Bắt đầu giao hàng
+                      </button>
+                    ` : ''}
+                    ${order.status === 'shipping' ? `
+                      <button onclick="updateOrderStatus(${order.id}, 'completed')" 
+                        class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                        Hoàn thành đơn hàng
+                      </button>
+                    ` : ''}
+                  </div>
+                </div>
+              ` : ''}
+
+              <button onclick="closeModal()" 
+                class="w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition font-medium">
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    // Close modal
+    function closeModal() {
+      const modal = document.getElementById('productModal') || document.getElementById('orderModal');
+      if (modal) modal.remove();
+    }
+
+    // Handle product form submit
+    async function handleProductSubmit(event, productId) {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      
+      const productData = {
+        name: formData.get('name'),
+        description: formData.get('description'),
+        price: parseFloat(formData.get('price')),
+        stock: parseInt(formData.get('stock')),
+        image_url: formData.get('image_url') || null
+      };
+
+      let success;
+      if (productId) {
+        success = await updateProduct(productId, productData);
+      } else {
+        success = await addProduct(productData);
+      }
+
+      if (success) {
+        closeModal();
+      }
+    }
+
+    // Render app
+    function renderApp() {
+      const totalProducts = products.length;
+      const totalValue = products.reduce((sum, p) => sum + (p.price * p.stock), 0);
+      const outOfStock = products.filter(p => p.stock === 0).length;
+      
+      const totalOrders = orders.length;
+      const pendingOrders = orders.filter(o => o.status === 'pending').length;
+      const totalRevenue = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + parseFloat(o.total_amount), 0);
+
+      document.getElementById('app').innerHTML = `
+        <!-- Header -->
+        <div class="bg-white shadow">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex">
+            <h1 class="text-3xl font-bold text-gray-900">Quản Lý Cửa Hàng</h1>
+            <p class="mt-1 text-sm text-gray-500">Quản lý sản phẩm và đơn hàng của bạn</p>
+            <a class="codepen-button" style="margin-left:500px;width: 130px;" href="../src/main-seller.html">
+            <span class="span">
+                <p class="p">Home</p>
+            <svg
+            height="1em">
+            </svg></span
+        ></a>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <!-- Tabs -->
+          <div class="mb-8 border-b border-gray-200">
+            <nav class="flex space-x-8">
+              <button onclick="switchTab('products')" 
+                class="pb-4 px-1 border-b-2 font-medium text-sm ${currentTab === 'products' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}">
+                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+                Sản phẩm (${totalProducts})
+              </button>
+              <button onclick="switchTab('orders')" 
+                class="pb-4 px-1 border-b-2 font-medium text-sm ${currentTab === 'orders' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}">
+                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                </svg>
+                Đơn hàng (${totalOrders})
+              </button>
+            </nav>
+          </div>
+
+          ${currentTab === 'products' ? `
+            <!-- Products Statistics -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                  <div class="p-3 bg-blue-100 rounded-lg">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                  </div>
+                  <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Tổng sản phẩm</p>
+                    <p class="text-2xl font-bold text-gray-900">${totalProducts}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                  <div class="p-3 bg-green-100 rounded-lg">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  </div>
+                  <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Tổng giá trị kho</p>
+                    <p class="text-2xl font-bold text-gray-900">${formatCurrency(totalValue)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                  <div class="p-3 bg-red-100 rounded-lg">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
+                    </svg>
+                  </div>
+                  <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Hết hàng</p>
+                    <p class="text-2xl font-bold text-gray-900">${outOfStock}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Products Action Bar -->
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-semibold text-gray-900">Danh sách sản phẩm</h2>
+              <button onclick="showProductModal()" 
+                class="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Thêm sản phẩm mới
+              </button>
+            </div>
+
+            <!-- Products Table -->
+            <div class="bg-white shadow rounded-lg overflow-hidden">
+              ${products.length === 0 ? `
+                <div class="text-center py-12">
+                  <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                  </svg>
+                  <p class="text-gray-600 text-lg mb-2">Chưa có sản phẩm nào</p>
+                  <p class="text-gray-500">Nhấn "Thêm sản phẩm mới" để bắt đầu</p>
+                </div>
+              ` : `
+                <div class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sản phẩm</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tồn kho</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày tạo</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                      ${products.map(product => `
+                        <tr class="hover:bg-gray-50">
+                          <td class="px-6 py-4">
+                            <div class="flex items-center">
+                              ${product.image_url ? `
+                                <img src="${product.image_url}" alt="${product.name}" 
+                                  class="w-12 h-12 rounded object-cover" 
+                                  onerror="this.src='https://placehold.co/48?text=No+Image'">
+                              ` : `
+                                <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+                                  <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                  </svg>
+                                </div>
+                              `}
+                              <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">${product.name}</div>
+                                <div class="text-sm text-gray-500">${product.description || 'Không có mô tả'}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-semibold text-gray-900">${formatCurrency(product.price)}</div>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              product.stock === 0 
+                                ? 'bg-red-100 text-red-800' 
+                                : product.stock < 10
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-green-100 text-green-800'
+                            }">
+                              ${product.stock === 0 ? 'Hết hàng' : `${product.stock} sản phẩm`}
+                            </span>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${product.created_at ? new Date(product.created_at).toLocaleDateString('vi-VN') : 'N/A'}
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button onclick='showProductModal(${JSON.stringify(product).replace(/'/g, "&#39;")})' 
+                              class="text-blue-600 hover:text-blue-900 mr-4">
+                              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                              </svg>
+                            </button>
+                            <button onclick="deleteProduct(${product.id})" 
+                              class="text-red-600 hover:text-red-900">
+                              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                              </svg>
+                            </button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              `}
+            </div>
+          ` : `
+            <!-- Orders Statistics -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                  <div class="p-3 bg-blue-100 rounded-lg">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                  </div>
+                  <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Tổng đơn hàng</p>
+                    <p class="text-2xl font-bold text-gray-900">${totalOrders}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                  <div class="p-3 bg-yellow-100 rounded-lg">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  </div>
+                  <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Chờ xác nhận</p>
+                    <p class="text-2xl font-bold text-gray-900">${pendingOrders}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                  <div class="p-3 bg-green-100 rounded-lg">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  </div>
+                  <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Doanh thu</p>
+                    <p class="text-2xl font-bold text-gray-900">${formatCurrency(totalRevenue)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Orders List -->
+            <div class="bg-white shadow rounded-lg overflow-hidden">
+              ${orders.length === 0 ? `
+                <div class="text-center py-12">
+                  <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                  </svg>
+                  <p class="text-gray-600 text-lg mb-2">Chưa có đơn hàng nào</p>
+                  <p class="text-gray-500">Đơn hàng mới sẽ hiển thị ở đây</p>
+                </div>
+              ` : `
+                <div class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã đơn</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Khách hàng</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng tiền</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày đặt</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                      ${orders.map(order => `
+                        <tr class="hover:bg-gray-50">
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">#${order.id}</div>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${order.buyer?.full_name || 'N/A'}</div>
+                            <div class="text-sm text-gray-500">${order.buyer?.email || ''}</div>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-semibold text-gray-900">${formatCurrency(order.total_amount)}</div>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(order.status)}">
+                              ${getStatusText(order.status)}
+                            </span>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${new Date(order.created_at).toLocaleDateString('vi-VN')}
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button onclick='showOrderDetailModal(${JSON.stringify(order).replace(/'/g, "&#39;")})' 
+                              class="text-blue-600 hover:text-blue-900">
+                              Xem chi tiết
+                            </button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              `}
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    // Make functions global
+    window.switchTab = switchTab;
+    window.showProductModal = showProductModal;
+    window.showOrderDetailModal = showOrderDetailModal;
+    window.closeModal = closeModal;
+    window.handleProductSubmit = handleProductSubmit;
+    window.deleteProduct = deleteProduct;
+    window.updateOrderStatus = updateOrderStatus;
+
+    // Start app
+    init();
+  </script>
+</body>
+</html>
